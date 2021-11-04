@@ -27,17 +27,22 @@
 
 int main(void)
 {
-	void *handle;
-
-	handle = dlopen(LIBM_SO, RTLD_LAZY);
-	(void)dlerror();
-	if (handle)
-		(void)dlclose(handle);
-
-	handle = dlopen(LIBM_SO, RTLD_NOW);
-	(void)dlerror();
-	if (handle)
-		(void)dlclose(handle);
-
-	return 0;
+  void *handle;
+  handle = dlopen(LIBM_SO, RTLD_LAZY);
+  (void)dlerror();
+  
+  if (handle)
+  {
+    (void)dlclose(handle);
+  }
+  
+  handle = dlopen(LIBM_SO, RTLD_NOW);
+  (void)dlerror();
+  
+  if (handle)
+  {
+    (void)dlclose(handle);
+  }
+  
+  return 0;
 }

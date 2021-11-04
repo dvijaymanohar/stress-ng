@@ -31,9 +31,8 @@
 
 int main(void)
 {
-	uint32_t a, b, c, d;
-
-        __get_cpuid(1, &a, &b, &c, &d);
+  uint32_t a, b, c, d;
+  __get_cpuid(1, &a, &b, &c, &d);
 }
 #else
 #error non-x86 platform, cpuid not supported

@@ -27,6 +27,6 @@
 
 int main(void)
 {
-	/* We don't care about the args, we just want to see if it links */
-	return pidfd_getfd(-1, 0, 0);
+  /* We don't care about the args, we just want to see if it links */
+  return pidfd_getfd(-1, 0, 0);
 }

@@ -25,6 +25,6 @@
 
 int main(int argc, char **argv)
 {
-	return __builtin_parity(argc);
+  return __builtin_parity(argc);
 }
 

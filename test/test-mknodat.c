@@ -31,9 +31,7 @@
 
 int main(void)
 {
-	dev_t dev;
-
-	(void)memset(&dev, 0, sizeof(dev));
-
-	return mknodat(AT_FDCWD, "test", 0600, dev);
+  dev_t dev;
+  (void)memset(&dev, 0, sizeof(dev));
+  return mknodat(AT_FDCWD, "test", 0600, dev);
 }

@@ -27,9 +27,7 @@
 
 int main(void)
 {
-	struct seccomp_notif_sizes sizes;
-
-	(void)sizes;
-
-	return sizeof(sizes);
+  struct seccomp_notif_sizes sizes;
+  (void)sizes;
+  return sizeof(sizes);
 }

@@ -27,8 +27,7 @@
 
 int main(void)
 {
-	int sz;
-
-	sz = getpagesize();	/* Legacy syscall */
-	return sz == 4096;
+  int sz;
+  sz = getpagesize(); /* Legacy syscall */
+  return sz == 4096;
 }

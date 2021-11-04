@@ -35,7 +35,7 @@
 #if NEED_GLIBC(2,19,0)
 int main(void)
 {
-	return getpgrp();
+  return getpgrp();
 }
 #else
 #error need glib 2.19.0 or higher

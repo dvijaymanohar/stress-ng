@@ -30,19 +30,24 @@
 
 int main(void)
 {
-	static const char *filename = "/tmp/test-fdatasync.tmp";
-	int fd, err = 1;
-
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
-	if (fd < 0)
-		return 1;
-	(void)unlink(filename);
-
-	if (fdatasync(fd) < 0)
-		goto err;
-	err = 0;
+  static const char *filename = "/tmp/test-fdatasync.tmp";
+  int fd, err = 1;
+  fd = open(filename, O_RDWR | O_CREAT, 0666);
+  
+  if (fd < 0)
+  {
+    return 1;
+  }
+  
+  (void)unlink(filename);
+  
+  if (fdatasync(fd) < 0)
+  {
+    goto err;
+  }
+  
+  err = 0;
 err:
-	(void)close(fd);
-
-	return err;
+  (void)close(fd);
+  return err;
 }

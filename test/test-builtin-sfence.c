@@ -25,7 +25,6 @@
 
 int main(int argc, char **argv)
 {
-	__builtin_ia32_sfence();
-
-	return 0;
+  __builtin_ia32_sfence();
+  return 0;
 }

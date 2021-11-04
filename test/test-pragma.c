@@ -34,6 +34,6 @@ STRESS_PRAGMA_POP
 
 int main(void)
 {
-	test_pragma();
-	return 0;
+  test_pragma();
+  return 0;
 }

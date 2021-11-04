@@ -26,5 +26,5 @@
 
 int main(void)
 {
-	return (sbrk(0) != (void *)0);
+  return (sbrk(0) != (void *)0);
 }

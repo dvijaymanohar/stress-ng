@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_framebuffer f;
-
-	(void)f;
-
-	return sizeof(f);
+  struct v4l2_framebuffer f;
+  (void)f;
+  return sizeof(f);
 }

@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	time_t t;
-
-	(void)memset(&t, 0, sizeof(t));
-
-	return stime(&t);
+  time_t t;
+  (void)memset(&t, 0, sizeof(t));
+  return stime(&t);
 }

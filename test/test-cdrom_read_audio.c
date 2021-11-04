@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_read_audio ra;
-
-	(void)ra;
-
-	return sizeof(ra);
+  struct cdrom_read_audio ra;
+  (void)ra;
+  return sizeof(ra);
 }

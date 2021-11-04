@@ -29,12 +29,11 @@
 
 int main(void)
 {
-	int fd;
-
+  int fd;
 #if defined(CLOCK_REALTIME)
-	return timerfd_create(CLOCK_REALTIME, 0);
+  return timerfd_create(CLOCK_REALTIME, 0);
 #elif defined(CLOCK_MONOTONIC)
-	return timerfd_create(CLOCK_MONOTONIC, 0);
+  return timerfd_create(CLOCK_MONOTONIC, 0);
 #else
 #error no POSIX clock types CLOCK_REALTIME or CLOCK_MONOTONIC
 #endif

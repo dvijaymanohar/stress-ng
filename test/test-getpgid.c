@@ -28,8 +28,7 @@
 
 int main(void)
 {
-	pid_t pid;
-
-	pid = getpid();
-	return getpgid(pid);
+  pid_t pid;
+  pid = getpid();
+  return getpgid(pid);
 }

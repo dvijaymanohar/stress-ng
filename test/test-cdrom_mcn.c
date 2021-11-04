@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_mcn mcn;
-
-	(void)mcn;
-
-	return sizeof(mcn);
+  struct cdrom_mcn mcn;
+  (void)mcn;
+  return sizeof(mcn);
 }

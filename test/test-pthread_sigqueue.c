@@ -30,11 +30,9 @@
 
 int main(void)
 {
-	pthread_t thread;
-	union sigval value;
-
-	(void)memset(&thread, 0, sizeof(thread));
-	(void)memset(&value, 0, sizeof(value));
-
-	return pthread_sigqueue(thread, SIGKILL, value);
+  pthread_t thread;
+  union sigval value;
+  (void)memset(&thread, 0, sizeof(thread));
+  (void)memset(&value, 0, sizeof(value));
+  return pthread_sigqueue(thread, SIGKILL, value);
 }

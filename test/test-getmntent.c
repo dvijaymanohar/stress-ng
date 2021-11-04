@@ -28,14 +28,18 @@
 
 int main(void)
 {
-	FILE *mounts;
-	struct mntent* mount;
-
-	mounts = setmntent("/etc/mtab", "r");
-	if (!mounts)
-		return 1;
-	while ((mount = getmntent(mounts)) != NULL)
-		;
-	(void)endmntent(mounts);
-	return 0;
+  FILE *mounts;
+  struct mntent *mount;
+  mounts = setmntent("/etc/mtab", "r");
+  
+  if (!mounts)
+  {
+    return 1;
+  }
+  
+  while ((mount = getmntent(mounts)) != NULL)
+    ;
+    
+  (void)endmntent(mounts);
+  return 0;
 }

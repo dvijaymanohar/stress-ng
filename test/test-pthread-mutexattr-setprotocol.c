@@ -28,11 +28,14 @@
 
 int main(void)
 {
-	int ret;
-	pthread_mutexattr_t mutex_attr;
-
-	ret = pthread_mutexattr_init(&mutex_attr);
-	if (ret)
-		ret = pthread_mutexattr_setprotocol(&mutex_attr, PTHREAD_PRIO_INHERIT);
-	return ret;
+  int ret;
+  pthread_mutexattr_t mutex_attr;
+  ret = pthread_mutexattr_init(&mutex_attr);
+  
+  if (ret)
+  {
+    ret = pthread_mutexattr_setprotocol(&mutex_attr, PTHREAD_PRIO_INHERIT);
+  }
+  
+  return ret;
 }

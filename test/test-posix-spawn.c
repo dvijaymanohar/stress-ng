@@ -28,9 +28,8 @@
 
 int main(void)
 {
-	pid_t pid = 0;
-	static char *argv_new[] = { NULL };
-	static char *env_new[] = { NULL };
-
-	return posix_spawn(&pid, "/tmp/nowhere", NULL, NULL, argv_new, env_new);
+  pid_t pid = 0;
+  static char *argv_new[] = { NULL };
+  static char *env_new[] = { NULL };
+  return posix_spawn(&pid, "/tmp/nowhere", NULL, NULL, argv_new, env_new);
 }

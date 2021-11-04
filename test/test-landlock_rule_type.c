@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	const enum landlock_rule_type type = LANDLOCK_RULE_PATH_BENEATH;
-
-	(void)type;
-
-	return (int)type;
+  const enum landlock_rule_type type = LANDLOCK_RULE_PATH_BENEATH;
+  (void)type;
+  return (int)type;
 }

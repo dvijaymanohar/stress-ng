@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	char buf[4096];
-
-	return readlinkat(AT_FDCWD, "test", buf, sizeof(buf));
+  char buf[4096];
+  return readlinkat(AT_FDCWD, "test", buf, sizeof(buf));
 }

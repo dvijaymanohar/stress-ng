@@ -28,12 +28,11 @@
 #include <sys/syscall.h>
 
 #if !defined(__NR_lookup_dcookie)
-#error __NR_lookup_dcookie syscall not defined
+  #error __NR_lookup_dcookie syscall not defined
 #endif
 
 int main(void)
 {
-	char buf[4096];
-
-	return syscall(__NR_lookup_dcookie, buf, sizeof(buf));
+  char buf[4096];
+  return syscall(__NR_lookup_dcookie, buf, sizeof(buf));
 }

@@ -25,8 +25,7 @@
 
 int main(void)
 {
-	__asm__ __volatile__("");
-
-	return 0;
+  __asm__ __volatile__("");
+  return 0;
 }
 

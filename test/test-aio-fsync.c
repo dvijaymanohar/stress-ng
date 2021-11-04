@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	struct aiocb aio;
-
-	(void)memset(&aio, 0, sizeof(aio));
-
-	return aio_fsync(O_SYNC, &aio);
+  struct aiocb aio;
+  (void)memset(&aio, 0, sizeof(aio));
+  return aio_fsync(O_SYNC, &aio);
 }

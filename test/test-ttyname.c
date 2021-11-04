@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	char *name = ttyname(0);
-
-	(void)name;
-
-	return 0;
+  char *name = ttyname(0);
+  (void)name;
+  return 0;
 }

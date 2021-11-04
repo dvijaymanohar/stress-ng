@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	double loadavg[3];
-
-	return getloadavg(loadavg, 3);
+  double loadavg[3];
+  return getloadavg(loadavg, 3);
 }

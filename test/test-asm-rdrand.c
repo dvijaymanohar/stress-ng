@@ -29,16 +29,15 @@
 int main(void)
 {
 #if defined(__x86_64__) || defined(__x86_64)
-	uint64_t ret;
+  uint64_t ret;
 #endif
 #if defined(__i386__)   || defined(__i386)
-	uint32_t ret;
+  uint32_t ret;
 #endif
-
-	asm volatile("1:;\n\
+  asm volatile("1:;\n\
 		     rdrand %0;\n\
 		     jnc 1b;\n":"=r"(ret));
-	return 0;
+  return 0;
 }
 #else
 #error not an x86 so no rdrand instruction

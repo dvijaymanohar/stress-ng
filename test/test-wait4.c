@@ -32,8 +32,7 @@
 
 int main(void)
 {
-	int status;
-	struct rusage rusage;
-
-	return wait4(getpid(), &status, 0, &rusage);
+  int status;
+  struct rusage rusage;
+  return wait4(getpid(), &status, 0, &rusage);
 }

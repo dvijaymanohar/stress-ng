@@ -30,7 +30,6 @@ extern int setxattr(const char *path, const char *name, const void *value, size_
 
 int main(void)
 {
-	char value[] = "valuestring";
-
-	return setxattr("/some/path/to/somewhere", "name", value, sizeof(value), 0);
+  char value[] = "valuestring";
+  return setxattr("/some/path/to/somewhere", "name", value, sizeof(value), 0);
 }

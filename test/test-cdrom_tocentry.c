@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_tocentry entry;
-
-	(void)entry;
-
-	return sizeof(entry);
+  struct cdrom_tocentry entry;
+  (void)entry;
+  return sizeof(entry);
 }

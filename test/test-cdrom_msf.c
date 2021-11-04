@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_msf msf;
-
-	(void)msf;
-
-	return sizeof(msf);
+  struct cdrom_msf msf;
+  (void)msf;
+  return sizeof(msf);
 }

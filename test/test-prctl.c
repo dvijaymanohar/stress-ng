@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return prctl(0, 0, 0, 0, 0);
+  return prctl(0, 0, 0, 0, 0);
 }

@@ -29,13 +29,12 @@
 
 int main(void)
 {
-	struct timespec req = { 0 };
-	struct timespec rem;
-
+  struct timespec req = { 0 };
+  struct timespec rem;
 #if defined(CLOCK_REALTIME)
-	return clock_nanosleep(CLOCK_REALTIME, 0, &req, &rem);
+  return clock_nanosleep(CLOCK_REALTIME, 0, &req, &rem);
 #elif defined(CLOCK_MONOTONIC)
-	return clock_settime(CLOCK_MONOTONIC, 0, &req, &rem);
+  return clock_settime(CLOCK_MONOTONIC, 0, &req, &rem);
 #else
 #error no POSIX clock types CLOCK_REALTIME or CLOCK_MONOTONIC
 #endif

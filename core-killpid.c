@@ -26,30 +26,33 @@
 
 /*
  *  stress_killpid()
- *	kill a process with SIGKILL. Try and release memory
- *	as soon as possible using process_mrelease for the
- *	Linux case.
+ *  kill a process with SIGKILL. Try and release memory
+ *  as soon as possible using process_mrelease for the
+ *  Linux case.
  */
 int stress_killpid(const pid_t pid)
 {
-#if defined(__linux__) && 		\
+#if defined(__linux__) &&     \
     defined(__NR_process_release)
-	int pidfd, ret;
-
-	pidfd = shim_pidfd_open(pid, 0);
-	ret = kill(pid, SIGKILL);
-
-	if (pidfd >= 0) {
-		int saved_errno = errno;
-
-		if (ret == 0)
-			(void)shim_process_mrelease(pidfd, 0);
-		(void)close(pidfd);
-
-		errno = saved_errno;
-	}
-	return ret;
+  int pidfd, ret;
+  pidfd = shim_pidfd_open(pid, 0);
+  ret = kill(pid, SIGKILL);
+  
+  if (pidfd >= 0)
+  {
+    int saved_errno = errno;
+    
+    if (ret == 0)
+    {
+      (void)shim_process_mrelease(pidfd, 0);
+    }
+    
+    (void)close(pidfd);
+    errno = saved_errno;
+  }
+  
+  return ret;
 #else
-	return kill(pid, SIGKILL);
+  return kill(pid, SIGKILL);
 #endif
 }

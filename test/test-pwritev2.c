@@ -32,19 +32,19 @@
 
 int main(void)
 {
-	struct iovec iov;
-	char buffer[] = "hello world\n";
-	int fd, rc;
-
-	fd = open("/dev/zero", O_WRONLY);
-	if (fd < 0)
-		return -1;
-
-	iov.iov_base = buffer;
-	iov.iov_len = sizeof(buffer);
-
-	rc = pwritev2(fd, &iov, 1, -1, 0);
-	(void)close(fd);
-
-	return rc;
+  struct iovec iov;
+  char buffer[] = "hello world\n";
+  int fd, rc;
+  fd = open("/dev/zero", O_WRONLY);
+  
+  if (fd < 0)
+  {
+    return -1;
+  }
+  
+  iov.iov_base = buffer;
+  iov.iov_len = sizeof(buffer);
+  rc = pwritev2(fd, &iov, 1, -1, 0);
+  (void)close(fd);
+  return rc;
 }

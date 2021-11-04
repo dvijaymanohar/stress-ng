@@ -29,7 +29,6 @@ extern int lsetxattr(const char *path, const char *name, const void *value, size
 
 int main(void)
 {
-	char value[] = "valuestring";
-
-	return lsetxattr("/some/path/to/somewhere", "name", value, sizeof(value), 0);
+  char value[] = "valuestring";
+  return lsetxattr("/some/path/to/somewhere", "name", value, sizeof(value), 0);
 }

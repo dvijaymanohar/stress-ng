@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return setresuid(-1, -1, -1);
+  return setresuid(-1, -1, -1);
 }

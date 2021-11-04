@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return unlinkat(AT_FDCWD, "test", 0);
+  return unlinkat(AT_FDCWD, "test", 0);
 }

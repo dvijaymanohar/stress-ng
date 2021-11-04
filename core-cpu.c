@@ -26,21 +26,26 @@
 
 bool stress_cpu_is_x86(void)
 {
-#if defined(HAVE_CPUID_H) &&	\
-    defined(STRESS_ARCH_X86) && 	\
-    defined(HAVE_CPUID) &&	\
+#if defined(HAVE_CPUID_H) &&  \
+    defined(STRESS_ARCH_X86) &&   \
+    defined(HAVE_CPUID) &&  \
     NEED_GNUC(4,6,0)
-	uint32_t eax, ebx, ecx, edx;
-
-	/* Intel CPU? */
-	__cpuid(0, eax, ebx, ecx, edx);
-	if ((memcmp(&ebx, "Genu", 4) == 0) &&
-	    (memcmp(&edx, "ineI", 4) == 0) &&
-	    (memcmp(&ecx, "ntel", 4) == 0))
-		return true;
-	else
-		return false;
+  uint32_t eax, ebx, ecx, edx;
+  /* Intel CPU? */
+  __cpuid(0, eax, ebx, ecx, edx);
+  
+  if ((memcmp(&ebx, "Genu", 4) == 0) &&
+      (memcmp(&edx, "ineI", 4) == 0) &&
+      (memcmp(&ecx, "ntel", 4) == 0))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+  
 #else
-	return false;
+  return false;
 #endif
 }

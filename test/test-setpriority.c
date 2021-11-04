@@ -28,5 +28,5 @@
 
 int main(void)
 {
-	return setpriority(PRIO_USER, 0, 0);
+  return setpriority(PRIO_USER, 0, 0);
 }

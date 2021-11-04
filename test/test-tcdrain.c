@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return tcdrain(0);
+  return tcdrain(0);
 }

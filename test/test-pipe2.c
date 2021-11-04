@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	int pipefds[2];
-
-	return pipe2(pipefds, 0);
+  int pipefds[2];
+  return pipe2(pipefds, 0);
 }

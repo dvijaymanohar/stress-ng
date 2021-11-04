@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct kbkeycode k;
-
-	(void)k;
-
-	return sizeof(k);
+  struct kbkeycode k;
+  (void)k;
+  return sizeof(k);
 }

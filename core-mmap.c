@@ -26,48 +26,63 @@
 
 /*
  *  stress_mmap_set()
- *	set mmap'd data, touching pages in
- *	a specific pattern - check with
- *	mmap_check().
+ *  set mmap'd data, touching pages in
+ *  a specific pattern - check with
+ *  mmap_check().
  */
 void stress_mmap_set(
-	uint8_t *buf,
-	const size_t sz,
-	const size_t page_size)
+  uint8_t *buf,
+  const size_t sz,
+  const size_t page_size)
 {
-	size_t i, j;
-	uint8_t val = 0;
-	uint8_t *ptr = buf;
-
-	for (i = 0; i < sz; i += page_size) {
-		if (!keep_stressing_flag())
-			break;
-		for (j = 0; j < page_size; j++)
-			*ptr++ = val++;
-		val++;
-	}
+  size_t i, j;
+  uint8_t val = 0;
+  uint8_t *ptr = buf;
+  
+  for (i = 0; i < sz; i += page_size)
+  {
+    if (!keep_stressing_flag())
+    {
+      break;
+    }
+    
+    for (j = 0; j < page_size; j++)
+    {
+      *ptr++ = val++;
+    }
+    
+    val++;
+  }
 }
 
 /*
  *  stress_mmap_check()
- *	check if mmap'd data is sane
+ *  check if mmap'd data is sane
  */
 int stress_mmap_check(
-	uint8_t *buf,
-	const size_t sz,
-	const size_t page_size)
+  uint8_t *buf,
+  const size_t sz,
+  const size_t page_size)
 {
-	size_t i, j;
-	uint8_t val = 0;
-	uint8_t *ptr = buf;
-
-	for (i = 0; i < sz; i += page_size) {
-		if (!keep_stressing_flag())
-			break;
-		for (j = 0; j < page_size; j++)
-			if (*ptr++ != val++)
-				return -1;
-		val++;
-	}
-	return 0;
+  size_t i, j;
+  uint8_t val = 0;
+  uint8_t *ptr = buf;
+  
+  for (i = 0; i < sz; i += page_size)
+  {
+    if (!keep_stressing_flag())
+    {
+      break;
+    }
+    
+    for (j = 0; j < page_size; j++)
+      if (*ptr++ != val++)
+      {
+        return -1;
+      }
+      
+    val++;
+  }
+  
+  return 0;
 }

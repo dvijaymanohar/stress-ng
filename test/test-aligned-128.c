@@ -24,18 +24,16 @@
  */
 #include <stdint.h>
 
-int __attribute__ ((aligned(128))) test_align128(void);
+int __attribute__((aligned(128))) test_align128(void);
 
 int main(void)
 {
-	const intptr_t addr = (intptr_t)test_align128;
-
-	(void)test_align128();
-
-	return addr & 127;
+  const intptr_t addr = (intptr_t)test_align128;
+  (void)test_align128();
+  return addr & 127;
 }
 
-int __attribute__ ((aligned(128))) test_align128(void)
+int __attribute__((aligned(128))) test_align128(void)
 {
-	return 0;
+  return 0;
 }

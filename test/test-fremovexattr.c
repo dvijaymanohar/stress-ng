@@ -29,7 +29,6 @@ extern int fremovexattr(int fd, const char *name);
 
 int main(void)
 {
-	int fd = 3;
-
-	return fremovexattr(fd, "name");
+  int fd = 3;
+  return fremovexattr(fd, "name");
 }

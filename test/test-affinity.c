@@ -26,23 +26,24 @@
 #include <sched.h>
 
 #if defined(__gnu_hurd__)
-#error sched_getaffinity and sched_setaffinity are not implemented
+  #error sched_getaffinity and sched_setaffinity are not implemented
 #endif
 
 int main(void)
 {
-	cpu_set_t mask;
-	int rc;
-
-	CPU_ZERO(&mask);
-	CPU_SET(0, &mask);
-	rc = sched_setaffinity(0, sizeof(mask), &mask);
-	(void)rc;
-
-	rc = sched_getaffinity(0, sizeof(mask), &mask);
-	if (rc == 0) {
-		rc = CPU_ISSET(0, &mask);
-		(void)rc;
-	}
-	return 0;
+  cpu_set_t mask;
+  int rc;
+  CPU_ZERO(&mask);
+  CPU_SET(0, &mask);
+  rc = sched_setaffinity(0, sizeof(mask), &mask);
+  (void)rc;
+  rc = sched_getaffinity(0, sizeof(mask), &mask);
+  
+  if (rc == 0)
+  {
+    rc = CPU_ISSET(0, &mask);
+    (void)rc;
+  }
+  
+  return 0;
 }

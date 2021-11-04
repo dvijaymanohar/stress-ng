@@ -28,5 +28,5 @@
 
 int main(void)
 {
-	return remap_file_pages((void *)0, 4096, 0, 0, MAP_SHARED);
+  return remap_file_pages((void *)0, 4096, 0, 0, MAP_SHARED);
 }

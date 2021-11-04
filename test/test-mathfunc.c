@@ -27,11 +27,12 @@
 #include <complex.h>
 #include <stddef.h>
 
-static void *funcs[] = {
-	MATHFUNC,
+static void *funcs[] =
+{
+  MATHFUNC,
 };
 
 int main(void)
 {
-	return (ptrdiff_t)&MATHFUNC + (funcs[0] == 0);
+  return (ptrdiff_t)&MATHFUNC + (funcs[0] == 0);
 }

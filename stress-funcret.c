@@ -26,70 +26,75 @@
 
 typedef void (*stress_funcret_func)(const stress_args_t *argse);
 
-typedef struct {
-	const char              *name;  /* human readable form of stressor */
-	const stress_funcret_func   func;   /* the funcret method function */
+typedef struct
+{
+  const char              *name;  /* human readable form of stressor */
+  const stress_funcret_func   func;   /* the funcret method function */
 } stress_funcret_method_info_t;
 
 static const stress_funcret_method_info_t funcret_methods[];
 
-static const stress_help_t help[] = {
-	{ NULL,	"funcret N",		"start N workers exercising function return copying" },
-	{ NULL,	"funcret-ops N",	"stop after N function return bogo operations" },
-	{ NULL,	"funcret-method M",	"select method of exercising a function return type" },
-	{ NULL,	NULL,			NULL }
+static const stress_help_t help[] =
+{
+  { NULL, "funcret N",    "start N workers exercising function return copying" },
+  { NULL, "funcret-ops N",  "stop after N function return bogo operations" },
+  { NULL, "funcret-method M", "select method of exercising a function return type" },
+  { NULL, NULL,     NULL }
 };
 
-typedef long double 	stress_long_double_t;
+typedef long double   stress_long_double_t;
 
-typedef struct {
-	uint8_t		data[32];	/* cppcheck-suppress unusedStructMember */
+typedef struct
+{
+  uint8_t   data[32]; /* cppcheck-suppress unusedStructMember */
 } stress_uint8x32_t;
 
-typedef struct {
-	uint8_t		data[128];	/* cppcheck-suppress unusedStructMember */
+typedef struct
+{
+  uint8_t   data[128];  /* cppcheck-suppress unusedStructMember */
 } stress_uint8x128_t;
 
-typedef struct {
-	uint64_t	data[128];	/* cppcheck-suppress unusedStructMember */
+typedef struct
+{
+  uint64_t  data[128];  /* cppcheck-suppress unusedStructMember */
 } stress_uint64x128_t;
 
-#define stress_funcret1(type)					\
-static type NOINLINE stress_funcret_ ## type ## 1(type a);	\
-static type NOINLINE stress_funcret_ ## type ## 1(type a)	\
-{								\
-	type b;							\
-								\
-	(void)memcpy(&b, &a, sizeof(a));			\
-	(void)memset(&a, 0, sizeof(a));				\
-	return b;						\
-}								\
+#define stress_funcret1(type)         \
+  static type NOINLINE stress_funcret_ ## type ## 1(type a);  \
+  static type NOINLINE stress_funcret_ ## type ## 1(type a) \
+  {               \
+    type b;             \
+    \
+    (void)memcpy(&b, &a, sizeof(a));      \
+    (void)memset(&a, 0, sizeof(a));       \
+    return b;           \
+  }               \
 
-#define stress_funcret_deep1(type)				\
-static type NOINLINE stress_funcret_deep_ ## type ## 1(type a);	\
-								\
-static type NOINLINE stress_funcret_deep_ ## type ## 1(type a)	\
-{								\
-	type b;							\
-								\
-	(void)memcpy(&b, &a, sizeof(a));			\
-	(void)memset(&a, 0, sizeof(a));				\
-	return stress_funcret_ ## type ## 1(b);			\
-}								\
+#define stress_funcret_deep1(type)        \
+  static type NOINLINE stress_funcret_deep_ ## type ## 1(type a); \
+  \
+  static type NOINLINE stress_funcret_deep_ ## type ## 1(type a)  \
+  {               \
+    type b;             \
+    \
+    (void)memcpy(&b, &a, sizeof(a));      \
+    (void)memset(&a, 0, sizeof(a));       \
+    return stress_funcret_ ## type ## 1(b);     \
+  }               \
 
-#define stress_funcret_deeper1(type)				\
-static type NOINLINE stress_funcret_deeper_ ## type ## 1(type a);\
-								\
-static type NOINLINE stress_funcret_deeper_ ## type ## 1(type a)\
-{								\
-	type b;							\
-								\
-	(void)memcpy(&b, &a, sizeof(a));			\
-	(void)memset(&a, 0, sizeof(a));				\
-								\
-	return stress_funcret_deep_ ## type ## 1(		\
-		stress_funcret_ ## type ## 1(b));		\
-}
+#define stress_funcret_deeper1(type)        \
+  static type NOINLINE stress_funcret_deeper_ ## type ## 1(type a);\
+  \
+  static type NOINLINE stress_funcret_deeper_ ## type ## 1(type a)\
+  {               \
+    type b;             \
+    \
+    (void)memcpy(&b, &a, sizeof(a));      \
+    (void)memset(&a, 0, sizeof(a));       \
+    \
+    return stress_funcret_deep_ ## type ## 1(   \
+                                                stress_funcret_ ## type ## 1(b));   \
+  }
 
 stress_funcret1(uint8_t)
 stress_funcret_deep1(uint8_t)
@@ -108,9 +113,9 @@ stress_funcret_deep1(uint64_t)
 stress_funcret_deeper1(uint64_t)
 
 #if defined(HAVE_INT128_T)
-stress_funcret1(__uint128_t)
-stress_funcret_deep1(__uint128_t)
-stress_funcret_deeper1(__uint128_t)
+  stress_funcret1(__uint128_t)
+  stress_funcret_deep1(__uint128_t)
+  stress_funcret_deeper1(__uint128_t)
 #endif
 
 stress_funcret1(float)
@@ -125,39 +130,39 @@ stress_funcret1(stress_long_double_t)
 stress_funcret_deep1(stress_long_double_t)
 stress_funcret_deeper1(stress_long_double_t)
 
-#if defined(HAVE_FLOAT_DECIMAL32) &&	\
-    !defined(__clang__)
-stress_funcret1(_Decimal32)
-stress_funcret_deep1(_Decimal32)
-stress_funcret_deeper1(_Decimal32)
+#if defined(HAVE_FLOAT_DECIMAL32) &&  \
+  !defined(__clang__)
+  stress_funcret1(_Decimal32)
+  stress_funcret_deep1(_Decimal32)
+  stress_funcret_deeper1(_Decimal32)
 #endif
 
-#if defined(HAVE_FLOAT_DECIMAL64) &&	\
-    !defined(__clang__)
-stress_funcret1(_Decimal64)
-stress_funcret_deep1(_Decimal64)
-stress_funcret_deeper1(_Decimal64)
+#if defined(HAVE_FLOAT_DECIMAL64) &&  \
+  !defined(__clang__)
+  stress_funcret1(_Decimal64)
+  stress_funcret_deep1(_Decimal64)
+  stress_funcret_deeper1(_Decimal64)
 #endif
 
-#if defined(HAVE_FLOAT_DECIMAL128) &&	\
-    !defined(__clang__)
-stress_funcret1(_Decimal128)
-stress_funcret_deep1(_Decimal128)
-stress_funcret_deeper1(_Decimal128)
+#if defined(HAVE_FLOAT_DECIMAL128) && \
+  !defined(__clang__)
+  stress_funcret1(_Decimal128)
+  stress_funcret_deep1(_Decimal128)
+  stress_funcret_deeper1(_Decimal128)
 #endif
 
-#if defined(HAVE_FLOAT80) &&		\
-    !defined(__clang__)
-stress_funcret1(__float80)
-stress_funcret_deep1(__float80)
-stress_funcret_deeper1(__float80)
+#if defined(HAVE_FLOAT80) &&    \
+  !defined(__clang__)
+  stress_funcret1(__float80)
+  stress_funcret_deep1(__float80)
+  stress_funcret_deeper1(__float80)
 #endif
 
-#if defined(HAVE_FLOAT128) &&		\
-    !defined(__clang__)
-stress_funcret1(__float128)
-stress_funcret_deep1(__float128)
-stress_funcret_deeper1(__float128)
+#if defined(HAVE_FLOAT128) &&   \
+  !defined(__clang__)
+  stress_funcret1(__float128)
+  stress_funcret_deep1(__float128)
+  stress_funcret_deeper1(__float128)
 #endif
 
 stress_funcret1(stress_uint8x32_t)
@@ -172,61 +177,61 @@ stress_funcret1(stress_uint64x128_t)
 stress_funcret_deep1(stress_uint64x128_t)
 stress_funcret_deeper1(stress_uint64x128_t)
 
-#define stress_funcret_type(type)					\
-static void NOINLINE stress_funcret_ ## type(const stress_args_t *args);	\
-									\
-static void NOINLINE stress_funcret_ ## type(const stress_args_t *args)	\
-{									\
-	register size_t i;						\
-	type a;								\
-	uint8_t data[sizeof(a)];					\
-									\
-	for (i = 0; i < sizeof(data); i++) 				\
-		data[i] = stress_mwc8();				\
-	(void)memcpy(&a, data, sizeof(a));				\
-									\
-	do {								\
-		for (i = 0; i < 1000; i++) {				\
-			volatile type b;				\
-			a = stress_funcret_ ## type ## 1(a);		\
-			a = stress_funcret_deep_ ## type ## 1(a);	\
-			a = stress_funcret_deeper_ ## type ## 1(a);	\
-			b = a;						\
-			(void)b;					\
-		}							\
-		inc_counter(args);					\
-	} while (keep_stressing(args));					\
-}
+#define stress_funcret_type(type)         \
+  static void NOINLINE stress_funcret_ ## type(const stress_args_t *args);  \
+  \
+  static void NOINLINE stress_funcret_ ## type(const stress_args_t *args) \
+  {                 \
+    register size_t i;            \
+    type a;               \
+    uint8_t data[sizeof(a)];          \
+    \
+    for (i = 0; i < sizeof(data); i++)        \
+      data[i] = stress_mwc8();        \
+    (void)memcpy(&a, data, sizeof(a));        \
+    \
+    do {                \
+      for (i = 0; i < 1000; i++) {        \
+        volatile type b;        \
+        a = stress_funcret_ ## type ## 1(a);    \
+        a = stress_funcret_deep_ ## type ## 1(a); \
+        a = stress_funcret_deeper_ ## type ## 1(a); \
+        b = a;            \
+        (void)b;          \
+      }             \
+      inc_counter(args);          \
+    } while (keep_stressing(args));         \
+  }
 
 stress_funcret_type(uint8_t)
 stress_funcret_type(uint16_t)
 stress_funcret_type(uint32_t)
 stress_funcret_type(uint64_t)
 #if defined(HAVE_INT128_T)
-stress_funcret_type(__uint128_t)
+  stress_funcret_type(__uint128_t)
 #endif
 stress_funcret_type(float)
 stress_funcret_type(double)
 stress_funcret_type(stress_long_double_t)
-#if defined(HAVE_FLOAT_DECIMAL32) &&	\
-    !defined(__clang__)
-stress_funcret_type(_Decimal32)
+#if defined(HAVE_FLOAT_DECIMAL32) &&  \
+  !defined(__clang__)
+  stress_funcret_type(_Decimal32)
 #endif
-#if defined(HAVE_FLOAT_DECIMAL64) &&	\
-    !defined(__clang__)
-stress_funcret_type(_Decimal64)
+#if defined(HAVE_FLOAT_DECIMAL64) &&  \
+  !defined(__clang__)
+  stress_funcret_type(_Decimal64)
 #endif
-#if defined(HAVE_FLOAT_DECIMAL128) &&	\
-    !defined(__clang__)
-stress_funcret_type(_Decimal128)
+#if defined(HAVE_FLOAT_DECIMAL128) && \
+  !defined(__clang__)
+  stress_funcret_type(_Decimal128)
 #endif
-#if defined(HAVE_FLOAT80) &&		\
-    !defined(__clang__)
-stress_funcret_type(__float80)
+#if defined(HAVE_FLOAT80) &&    \
+  !defined(__clang__)
+  stress_funcret_type(__float80)
 #endif
-#if defined(HAVE_FLOAT128) &&		\
-    !defined(__clang__)
-stress_funcret_type(__float128)
+#if defined(HAVE_FLOAT128) &&   \
+  !defined(__clang__)
+  stress_funcret_type(__float128)
 #endif
 stress_funcret_type(stress_uint8x32_t)
 stress_funcret_type(stress_uint8x128_t)
@@ -235,100 +240,102 @@ stress_funcret_type(stress_uint64x128_t)
 /*
  * Table of func call stress methods
  */
-static const stress_funcret_method_info_t funcret_methods[] = {
-	{ "uint8",	stress_funcret_uint8_t },
-	{ "uint16",	stress_funcret_uint16_t },
-	{ "uint32",	stress_funcret_uint32_t },
-	{ "uint64",	stress_funcret_uint64_t },
+static const stress_funcret_method_info_t funcret_methods[] =
+{
+  { "uint8",  stress_funcret_uint8_t },
+  { "uint16", stress_funcret_uint16_t },
+  { "uint32", stress_funcret_uint32_t },
+  { "uint64", stress_funcret_uint64_t },
 #if defined(HAVE_INT128_T)
-	{ "uint128",	stress_funcret___uint128_t },
+  { "uint128",  stress_funcret___uint128_t },
 #endif
-	{ "float",	stress_funcret_float },
-	{ "double",	stress_funcret_double },
-	{ "longdouble",	stress_funcret_stress_long_double_t },
-#if defined(HAVE_FLOAT80) &&	\
+  { "float",  stress_funcret_float },
+  { "double", stress_funcret_double },
+  { "longdouble", stress_funcret_stress_long_double_t },
+#if defined(HAVE_FLOAT80) &&  \
     !defined(__clang__)
-	{ "float80",	stress_funcret___float80 },
+  { "float80",  stress_funcret___float80 },
 #endif
-#if defined(HAVE_FLOAT128) &&	\
+#if defined(HAVE_FLOAT128) && \
     !defined(__clang__)
-	{ "float128",	stress_funcret___float128 },
+  { "float128", stress_funcret___float128 },
 #endif
-#if defined(HAVE_FLOAT_DECIMAL32) &&	\
+#if defined(HAVE_FLOAT_DECIMAL32) &&  \
     !defined(__clang__)
-	{ "decimal32",	stress_funcret__Decimal32 },
+  { "decimal32",  stress_funcret__Decimal32 },
 #endif
-#if defined(HAVE_FLOAT_DECIMAL64) &&	\
+#if defined(HAVE_FLOAT_DECIMAL64) &&  \
     !defined(__clang__)
-	{ "decimal64",	stress_funcret__Decimal64 },
+  { "decimal64",  stress_funcret__Decimal64 },
 #endif
-#if defined(HAVE_FLOAT_DECIMAL128) &&	\
+#if defined(HAVE_FLOAT_DECIMAL128) && \
     !defined(__clang__)
-	{ "decimal128",	stress_funcret__Decimal128 },
+  { "decimal128", stress_funcret__Decimal128 },
 #endif
-	{ "uint8x32",	stress_funcret_stress_uint8x32_t },
-	{ "uint8x128",	stress_funcret_stress_uint8x128_t },
-	{ "uint64x128",	stress_funcret_stress_uint64x128_t },
-	{ NULL,		NULL },
+  { "uint8x32", stress_funcret_stress_uint8x32_t },
+  { "uint8x128",  stress_funcret_stress_uint8x128_t },
+  { "uint64x128", stress_funcret_stress_uint64x128_t },
+  { NULL,   NULL },
 };
 
 /*
  *  stress_set_funcret_method()
- *	set the default funccal stress method
+ *  set the default funccal stress method
  */
 static int stress_set_funcret_method(const char *name)
 {
-	stress_funcret_method_info_t const *info;
-
-	for (info = funcret_methods; info->func; info++) {
-		if (!strcmp(info->name, name)) {
-			stress_set_setting("funcret-method", TYPE_ID_UINTPTR_T, &info);
-			return 0;
-		}
-	}
-
-	(void)fprintf(stderr, "funcret-method must be one of:");
-	for (info = funcret_methods; info->func; info++) {
-		(void)fprintf(stderr, " %s", info->name);
-	}
-	(void)fprintf(stderr, "\n");
-
-	return -1;
+  stress_funcret_method_info_t const *info;
+  
+  for (info = funcret_methods; info->func; info++)
+  {
+    if (!strcmp(info->name, name))
+    {
+      stress_set_setting("funcret-method", TYPE_ID_UINTPTR_T, &info);
+      return 0;
+    }
+  }
+  
+  (void)fprintf(stderr, "funcret-method must be one of:");
+  
+  for (info = funcret_methods; info->func; info++)
+  {
+    (void)fprintf(stderr, " %s", info->name);
+  }
+  
+  (void)fprintf(stderr, "\n");
+  return -1;
 }
 
 /*
  *  stress_funcret()
- *	stress various argument sized function calls
+ *  stress various argument sized function calls
  */
 static int stress_funcret(const stress_args_t *args)
 {
-	const stress_funcret_method_info_t *funcret_method = &funcret_methods[3];
-
-	(void)stress_get_setting("funcret-method", &funcret_method);
-
-	stress_set_proc_state(args->name, STRESS_STATE_RUN);
-
-	funcret_method->func(args);
-
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-
-	return EXIT_SUCCESS;
+  const stress_funcret_method_info_t *funcret_method = &funcret_methods[3];
+  (void)stress_get_setting("funcret-method", &funcret_method);
+  stress_set_proc_state(args->name, STRESS_STATE_RUN);
+  funcret_method->func(args);
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  return EXIT_SUCCESS;
 }
 
 static void stress_funcret_set_default(void)
 {
-	stress_set_funcret_method("uint64");
+  stress_set_funcret_method("uint64");
 }
 
-static const stress_opt_set_func_t opt_set_funcs[] = {
-	{ OPT_funcret_method,	stress_set_funcret_method },
-	{ 0,			NULL }
+static const stress_opt_set_func_t opt_set_funcs[] =
+{
+  { OPT_funcret_method, stress_set_funcret_method },
+  { 0,      NULL }
 };
 
-stressor_info_t stress_funcret_info = {
-	.stressor = stress_funcret,
-	.set_default = stress_funcret_set_default,
-	.class = CLASS_CPU,
-	.opt_set_funcs = opt_set_funcs,
-	.help = help
+stressor_info_t stress_funcret_info =
+{
+  .stressor = stress_funcret,
+  .set_default = stress_funcret_set_default,
+  .class = CLASS_CPU,
+  .opt_set_funcs = opt_set_funcs,
+  .help = help
 };

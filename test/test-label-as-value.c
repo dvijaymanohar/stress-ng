@@ -25,11 +25,9 @@
 
 int main(void)
 {
-	void *ptr;
-
+  void *ptr;
 label:
-	ptr = &&label;	/* cppcheck-suppress internalAstError */
-	goto *ptr;
-
-	return 0;
+  ptr = && label; /* cppcheck-suppress internalAstError */
+  goto *ptr;
+  return 0;
 }

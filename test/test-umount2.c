@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return umount2("", 0);
+  return umount2("", 0);
 }

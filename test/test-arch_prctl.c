@@ -30,7 +30,6 @@ extern int arch_prctl();
 
 int main(void)
 {
-	unsigned long setting;
-
-	return arch_prctl(ARCH_GET_CPUID, &setting);
+  unsigned long setting;
+  return arch_prctl(ARCH_GET_CPUID, &setting);
 }

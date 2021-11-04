@@ -26,6 +26,6 @@
 
 int main(void)
 {
-	return personality(0);
+  return personality(0);
 }
 

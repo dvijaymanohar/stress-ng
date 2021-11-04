@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return sched_get_priority_max(0);
+  return sched_get_priority_max(0);
 }

@@ -27,18 +27,19 @@
 
 /* The following functions from libpthread are used by stress-ng */
 
-static void *pthread_funcs[] = {
-	(void *)pthread_create,
-	(void *)pthread_join,
-	(void *)pthread_mutex_lock,
-	(void *)pthread_mutex_unlock,
-	(void *)pthread_cond_wait,
-	(void *)pthread_cond_broadcast,
-	(void *)pthread_cond_destroy,
-	(void *)pthread_mutex_destroy,
+static void *pthread_funcs[] =
+{
+  (void *)pthread_create,
+  (void *)pthread_join,
+  (void *)pthread_mutex_lock,
+  (void *)pthread_mutex_unlock,
+  (void *)pthread_cond_wait,
+  (void *)pthread_cond_broadcast,
+  (void *)pthread_cond_destroy,
+  (void *)pthread_mutex_destroy,
 };
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

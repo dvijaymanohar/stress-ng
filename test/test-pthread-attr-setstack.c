@@ -28,13 +28,15 @@
 
 int main(void)
 {
-	pthread_attr_t attr;
-	int ret;
-	static unsigned char stack[65536];
-
-	ret = pthread_attr_init(&attr);
-	if (ret)
-		return -1;
-
-	return ret = pthread_attr_setstack(&attr, stack, sizeof(stack));
+  pthread_attr_t attr;
+  int ret;
+  static unsigned char stack[65536];
+  ret = pthread_attr_init(&attr);
+  
+  if (ret)
+  {
+    return -1;
+  }
+  
+  return ret = pthread_attr_setstack(&attr, stack, sizeof(stack));
 }

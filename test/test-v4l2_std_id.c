@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	v4l2_std_id id;
-
-	(void)id;
-
-	return sizeof(id);
+  v4l2_std_id id;
+  (void)id;
+  return sizeof(id);
 }

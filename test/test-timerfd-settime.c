@@ -29,9 +29,8 @@
 
 int main(void)
 {
-	timer_t timerid = 0;
-	struct itimerspec new = { 0 };
-	struct itimerspec old = { 0 };
-
-	return timerfd_settime(0, 0, &new, &old);	/* EINVAL */
+  timer_t timerid = 0;
+  struct itimerspec new = { 0 };
+  struct itimerspec old = { 0 };
+  return timerfd_settime(0, 0, &new, &old); /* EINVAL */
 }

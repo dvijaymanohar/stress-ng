@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return fchownat(0, "", 0, 0, 0);
+  return fchownat(0, "", 0, 0, 0);
 }

@@ -27,7 +27,6 @@
 
 int main(void)
 {
-	char name[128];
-
-	return getdomainname(name, sizeof(name));
+  char name[128];
+  return getdomainname(name, sizeof(name));
 }

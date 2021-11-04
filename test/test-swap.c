@@ -28,13 +28,11 @@
 
 int main(void)
 {
-	static char swapfile[] = "test.swap";
-	int ret;
-
-	ret = swapon(swapfile, 0);
-	(void)ret;
-	ret = swapoff(swapfile);
-	(void)ret;
-
-	return 0;
+  static char swapfile[] = "test.swap";
+  int ret;
+  ret = swapon(swapfile, 0);
+  (void)ret;
+  ret = swapoff(swapfile);
+  (void)ret;
+  return 0;
 }

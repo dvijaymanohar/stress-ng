@@ -26,12 +26,14 @@
 
 int main(void)
 {
-	void *alloc_buf;
-	int ret;
-
-	ret = posix_memalign((void **)&alloc_buf, 64, (size_t)1024);
-	if (!ret)
-		free(alloc_buf);
-
-	return 0;
+  void *alloc_buf;
+  int ret;
+  ret = posix_memalign((void **)&alloc_buf, 64, (size_t)1024);
+  
+  if (!ret)
+  {
+    free(alloc_buf);
+  }
+  
+  return 0;
 }

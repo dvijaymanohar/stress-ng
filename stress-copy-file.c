@@ -24,167 +24,199 @@
  */
 #include "stress-ng.h"
 
-static const stress_help_t help[] = {
-	{ NULL,	"copy-file N",		"start N workers that copy file data" },
-	{ NULL,	"copy-file-ops N",	"stop after N copy bogo operations" },
-	{ NULL,	"copy-file-bytes N",	"specify size of file to be copied" },
-	{ NULL,	NULL,			NULL }
-
+static const stress_help_t help[] =
+{
+  { NULL, "copy-file N",    "start N workers that copy file data" },
+  { NULL, "copy-file-ops N",  "stop after N copy bogo operations" },
+  { NULL, "copy-file-bytes N",  "specify size of file to be copied" },
+  { NULL, NULL,     NULL }
+  
 };
 
 static int stress_set_copy_file_bytes(const char *opt)
 {
-	uint64_t copy_file_bytes;
-
-	copy_file_bytes = stress_get_uint64_byte_filesystem(opt, 1);
-	stress_check_range_bytes("copy-file-bytes", copy_file_bytes,
-		MIN_COPY_FILE_BYTES, MAX_COPY_FILE_BYTES);
-	return stress_set_setting("copy-file-bytes", TYPE_ID_UINT64, &copy_file_bytes);
+  uint64_t copy_file_bytes;
+  copy_file_bytes = stress_get_uint64_byte_filesystem(opt, 1);
+  stress_check_range_bytes("copy-file-bytes", copy_file_bytes,
+                           MIN_COPY_FILE_BYTES, MAX_COPY_FILE_BYTES);
+  return stress_set_setting("copy-file-bytes", TYPE_ID_UINT64, &copy_file_bytes);
 }
 
-static const stress_opt_set_func_t opt_set_funcs[] = {
-	{ OPT_copy_file_bytes,	stress_set_copy_file_bytes },
-	{ 0,			NULL }
+static const stress_opt_set_func_t opt_set_funcs[] =
+{
+  { OPT_copy_file_bytes,  stress_set_copy_file_bytes },
+  { 0,      NULL }
 };
 
 #if defined(HAVE_COPY_FILE_RANGE)
 
 /*
  *  stress_copy_file
- *	stress reading chunks of file using copy_file_range()
+ *  stress reading chunks of file using copy_file_range()
  */
 static int stress_copy_file(const stress_args_t *args)
 {
-	int fd_in, fd_out, rc = EXIT_FAILURE, ret;
-	const int fd_bad = stress_get_bad_fd();
-	char filename[PATH_MAX - 5], tmp[PATH_MAX];
-	uint64_t copy_file_bytes = DEFAULT_COPY_FILE_BYTES;
-
-	if (!stress_get_setting("copy-file-bytes", &copy_file_bytes)) {
-		if (g_opt_flags & OPT_FLAGS_MAXIMIZE)
-			copy_file_bytes = MAX_HDD_BYTES;
-		if (g_opt_flags & OPT_FLAGS_MINIMIZE)
-			copy_file_bytes = MIN_HDD_BYTES;
-	}
-
-	copy_file_bytes /= args->num_instances;
-	if (copy_file_bytes < DEFAULT_COPY_FILE_SIZE)
-		copy_file_bytes = DEFAULT_COPY_FILE_SIZE * 2;
-	if (copy_file_bytes < MIN_COPY_FILE_BYTES)
-		copy_file_bytes = MIN_COPY_FILE_BYTES;
-
-        ret = stress_temp_dir_mk_args(args);
-        if (ret < 0)
-                return exit_status(-ret);
-
-	(void)stress_temp_filename_args(args,
-			filename, sizeof(filename), stress_mwc32());
-	(void)snprintf(tmp, sizeof(tmp), "%s-orig", filename);
-	if ((fd_in = open(tmp, O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR)) < 0) {
-		rc = exit_status(errno);
-		pr_fail("%s: open %s failed, errno=%d (%s)\n",
-			args->name, tmp, errno, strerror(errno));
-		goto tidy_dir;
-	}
-	(void)unlink(tmp);
-	if (ftruncate(fd_in, (off_t)copy_file_bytes) < 0) {
-		rc = exit_status(errno);
-		pr_fail("%s: ftruncated failed, errno=%d (%s)\n",
-			args->name, errno, strerror(errno));
-		goto tidy_in;
-	}
-	if (shim_fsync(fd_in) < 0) {
-		pr_fail("%s: fsync failed, errno=%d (%s)\n",
-			args->name, errno, strerror(errno));
-		goto tidy_in;
-	}
-
-	(void)snprintf(tmp, sizeof(tmp), "%s-copy", filename);
-	if ((fd_out = open(tmp, O_CREAT | O_WRONLY,  S_IRUSR | S_IWUSR)) < 0) {
-		rc = exit_status(errno);
-		pr_fail("%s: open %s failed, errno=%d (%s)\n",
-			args->name, tmp, errno, strerror(errno));
-		goto tidy_in;
-	}
-	(void)unlink(tmp);
-
-	stress_set_proc_state(args->name, STRESS_STATE_RUN);
-
-	do {
-		ssize_t copy_ret;
-		shim_loff_t off_in, off_out;
-
-		off_in = (shim_loff_t)(stress_mwc64() % (copy_file_bytes - DEFAULT_COPY_FILE_SIZE));
-		off_out = (shim_loff_t)(stress_mwc64() % (copy_file_bytes - DEFAULT_COPY_FILE_SIZE));
-
-		copy_ret = shim_copy_file_range(fd_in, &off_in, fd_out,
-						&off_out, DEFAULT_COPY_FILE_SIZE, 0);
-		if (copy_ret < 0) {
-			if ((errno == EAGAIN) ||
-			    (errno == EINTR) ||
-			    (errno == ENOSPC))
-				continue;
-			if (errno == EINVAL) {
-				pr_inf_skip("%s: copy_file_range failed, the "
-					"kernel splice may be not implemented "
-					"for the file system, skipping stressor.\n",
-					args->name);
-				rc = EXIT_NO_RESOURCE;
-				goto tidy_out;
-			}
-			pr_fail("%s: copy_file_range failed, errno=%d (%s)\n",
-				args->name, errno, strerror(errno));
-			goto tidy_out;
-		}
-
-		/*
-		 *  Exercise with bad fds
-		 */
-		copy_ret = shim_copy_file_range(fd_bad, &off_in, fd_out,
-						&off_out, DEFAULT_COPY_FILE_SIZE, 0);
-		(void)copy_ret;
-		copy_ret = shim_copy_file_range(fd_in, &off_in, fd_bad,
-						&off_out, DEFAULT_COPY_FILE_SIZE, 0);
-		(void)copy_ret;
-		copy_ret = shim_copy_file_range(fd_out, &off_in, fd_in,
-						&off_out, DEFAULT_COPY_FILE_SIZE, 0);
-		(void)copy_ret;
-		/*
-		 *  Exercise with bad flags
-		 */
-		copy_ret = shim_copy_file_range(fd_in, &off_in, fd_out,
-						&off_out, DEFAULT_COPY_FILE_SIZE, ~0);
-		(void)copy_ret;
-
-		(void)shim_fsync(fd_out);
-		inc_counter(args);
-	} while (keep_stressing(args));
-	rc = EXIT_SUCCESS;
-
+  int fd_in, fd_out, rc = EXIT_FAILURE, ret;
+  const int fd_bad = stress_get_bad_fd();
+  char filename[PATH_MAX - 5], tmp[PATH_MAX];
+  uint64_t copy_file_bytes = DEFAULT_COPY_FILE_BYTES;
+  
+  if (!stress_get_setting("copy-file-bytes", &copy_file_bytes))
+  {
+    if (g_opt_flags & OPT_FLAGS_MAXIMIZE)
+    {
+      copy_file_bytes = MAX_HDD_BYTES;
+    }
+    
+    if (g_opt_flags & OPT_FLAGS_MINIMIZE)
+    {
+      copy_file_bytes = MIN_HDD_BYTES;
+    }
+  }
+  
+  copy_file_bytes /= args->num_instances;
+  
+  if (copy_file_bytes < DEFAULT_COPY_FILE_SIZE)
+  {
+    copy_file_bytes = DEFAULT_COPY_FILE_SIZE * 2;
+  }
+  
+  if (copy_file_bytes < MIN_COPY_FILE_BYTES)
+  {
+    copy_file_bytes = MIN_COPY_FILE_BYTES;
+  }
+  
+  ret = stress_temp_dir_mk_args(args);
+  
+  if (ret < 0)
+  {
+    return exit_status(-ret);
+  }
+  
+  (void)stress_temp_filename_args(args,
+                                  filename, sizeof(filename), stress_mwc32());
+  (void)snprintf(tmp, sizeof(tmp), "%s-orig", filename);
+  
+  if ((fd_in = open(tmp, O_CREAT | O_RDWR,  S_IRUSR | S_IWUSR)) < 0)
+  {
+    rc = exit_status(errno);
+    pr_fail("%s: open %s failed, errno=%d (%s)\n",
+            args->name, tmp, errno, strerror(errno));
+    goto tidy_dir;
+  }
+  
+  (void)unlink(tmp);
+  
+  if (ftruncate(fd_in, (off_t)copy_file_bytes) < 0)
+  {
+    rc = exit_status(errno);
+    pr_fail("%s: ftruncated failed, errno=%d (%s)\n",
+            args->name, errno, strerror(errno));
+    goto tidy_in;
+  }
+  
+  if (shim_fsync(fd_in) < 0)
+  {
+    pr_fail("%s: fsync failed, errno=%d (%s)\n",
+            args->name, errno, strerror(errno));
+    goto tidy_in;
+  }
+  
+  (void)snprintf(tmp, sizeof(tmp), "%s-copy", filename);
+  
+  if ((fd_out = open(tmp, O_CREAT | O_WRONLY,  S_IRUSR | S_IWUSR)) < 0)
+  {
+    rc = exit_status(errno);
+    pr_fail("%s: open %s failed, errno=%d (%s)\n",
+            args->name, tmp, errno, strerror(errno));
+    goto tidy_in;
+  }
+  
+  (void)unlink(tmp);
+  stress_set_proc_state(args->name, STRESS_STATE_RUN);
+  
+  do
+  {
+    ssize_t copy_ret;
+    shim_loff_t off_in, off_out;
+    off_in = (shim_loff_t)(stress_mwc64() % (copy_file_bytes - DEFAULT_COPY_FILE_SIZE));
+    off_out = (shim_loff_t)(stress_mwc64() % (copy_file_bytes - DEFAULT_COPY_FILE_SIZE));
+    copy_ret = shim_copy_file_range(fd_in, &off_in, fd_out,
+                                    &off_out, DEFAULT_COPY_FILE_SIZE, 0);
+                                    
+    if (copy_ret < 0)
+    {
+      if ((errno == EAGAIN) ||
+          (errno == EINTR) ||
+          (errno == ENOSPC))
+      {
+        continue;
+      }
+      
+      if (errno == EINVAL)
+      {
+        pr_inf_skip("%s: copy_file_range failed, the "
+                    "kernel splice may be not implemented "
+                    "for the file system, skipping stressor.\n",
+                    args->name);
+        rc = EXIT_NO_RESOURCE;
+        goto tidy_out;
+      }
+      
+      pr_fail("%s: copy_file_range failed, errno=%d (%s)\n",
+              args->name, errno, strerror(errno));
+      goto tidy_out;
+    }
+    
+    /*
+     *  Exercise with bad fds
+     */
+    copy_ret = shim_copy_file_range(fd_bad, &off_in, fd_out,
+                                    &off_out, DEFAULT_COPY_FILE_SIZE, 0);
+    (void)copy_ret;
+    copy_ret = shim_copy_file_range(fd_in, &off_in, fd_bad,
+                                    &off_out, DEFAULT_COPY_FILE_SIZE, 0);
+    (void)copy_ret;
+    copy_ret = shim_copy_file_range(fd_out, &off_in, fd_in,
+                                    &off_out, DEFAULT_COPY_FILE_SIZE, 0);
+    (void)copy_ret;
+    /*
+     *  Exercise with bad flags
+     */
+    copy_ret = shim_copy_file_range(fd_in, &off_in, fd_out,
+                                    &off_out, DEFAULT_COPY_FILE_SIZE, ~0);
+    (void)copy_ret;
+    (void)shim_fsync(fd_out);
+    inc_counter(args);
+  }
+  while (keep_stressing(args));
+  
+  rc = EXIT_SUCCESS;
 tidy_out:
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-	(void)close(fd_out);
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  (void)close(fd_out);
 tidy_in:
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-	(void)close(fd_in);
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  (void)close(fd_in);
 tidy_dir:
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-	(void)stress_temp_dir_rm_args(args);
-
-	return rc;
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  (void)stress_temp_dir_rm_args(args);
+  return rc;
 }
 
-stressor_info_t stress_copy_file_info = {
-	.stressor = stress_copy_file,
-	.class = CLASS_FILESYSTEM | CLASS_OS,
-	.opt_set_funcs = opt_set_funcs,
-	.help = help
+stressor_info_t stress_copy_file_info =
+{
+  .stressor = stress_copy_file,
+  .class = CLASS_FILESYSTEM | CLASS_OS,
+  .opt_set_funcs = opt_set_funcs,
+  .help = help
 };
 #else
-stressor_info_t stress_copy_file_info = {
-	.stressor = stress_not_implemented,
-	.class = CLASS_FILESYSTEM | CLASS_OS,
-	.opt_set_funcs = opt_set_funcs,
-	.help = help
+stressor_info_t stress_copy_file_info =
+{
+  .stressor = stress_not_implemented,
+  .class = CLASS_FILESYSTEM | CLASS_OS,
+  .opt_set_funcs = opt_set_funcs,
+  .help = help
 };
 #endif

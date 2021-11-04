@@ -27,10 +27,8 @@
 
 int main(void)
 {
-	struct landlock_ruleset_attr attr;
-
-	(void)memset(&attr, 0, sizeof(attr));
-	(void)attr;
-
-	return sizeof(attr);
+  struct landlock_ruleset_attr attr;
+  (void)memset(&attr, 0, sizeof(attr));
+  (void)attr;
+  return sizeof(attr);
 }

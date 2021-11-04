@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	char *name = ptsname(0);
-
-	(void)name;
-
-	return 0;
+  char *name = ptsname(0);
+  (void)name;
+  return 0;
 }

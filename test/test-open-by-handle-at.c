@@ -30,9 +30,8 @@
 
 int main(void)
 {
-	struct file_handle handle = { 0 };
-	int mount_fd = 0;
-	int flags = 0;
-
-	return open_by_handle_at(mount_fd, &handle, flags);
+  struct file_handle handle = { 0 };
+  int mount_fd = 0;
+  int flags = 0;
+  return open_by_handle_at(mount_fd, &handle, flags);
 }

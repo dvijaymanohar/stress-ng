@@ -28,7 +28,6 @@
 
 int main(void)
 {
-	struct rusage usage;
-
-	return getrusage(RUSAGE_SELF, &usage);
+  struct rusage usage;
+  return getrusage(RUSAGE_SELF, &usage);
 }

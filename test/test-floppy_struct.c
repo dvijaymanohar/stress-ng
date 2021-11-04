@@ -26,7 +26,6 @@
 
 int main(void)
 {
-	struct floppy_struct floppy;
-
-	return sizeof(floppy);
+  struct floppy_struct floppy;
+  return sizeof(floppy);
 }

@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct unimapdesc u;
-
-	(void)u;
-
-	return sizeof(u);
+  struct unimapdesc u;
+  (void)u;
+  return sizeof(u);
 }

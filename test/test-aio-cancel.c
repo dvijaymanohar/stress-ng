@@ -27,10 +27,8 @@
 
 int main(void)
 {
-	int fd = 0;
-	struct aiocb aio;
-
-	(void)memset(&aio, 0, sizeof(aio));
-
-	return aio_cancel(fd, &aio);
+  int fd = 0;
+  struct aiocb aio;
+  (void)memset(&aio, 0, sizeof(aio));
+  return aio_cancel(fd, &aio);
 }

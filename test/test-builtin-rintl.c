@@ -26,8 +26,7 @@
 
 int main(int argc, char **argv)
 {
-	long double x = 1.48734 + (long double)argc;
-
-	return (int)__builtin_rintl(x);
+  long double x = 1.48734 + (long double)argc;
+  return (int)__builtin_rintl(x);
 }
 

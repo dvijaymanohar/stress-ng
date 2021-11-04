@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	struct open_how how;
-
-	(void)how;
-
-	return sizeof(how);
+  struct open_how how;
+  (void)how;
+  return sizeof(how);
 }

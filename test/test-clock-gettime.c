@@ -29,12 +29,11 @@
 
 int main(void)
 {
-	struct timespec t;
-
+  struct timespec t;
 #if defined(CLOCK_REALTIME)
-	return clock_gettime(CLOCK_REALTIME, &t);
+  return clock_gettime(CLOCK_REALTIME, &t);
 #elif defined(CLOCK_MONOTONIC)
-	return clock_gettime(CLOCK_MONOTONIC, &t);
+  return clock_gettime(CLOCK_MONOTONIC, &t);
 #else
 #error no POSIX clock types CLOCK_REALTIME or CLOCK_MONOTONIC
 #endif

@@ -28,5 +28,5 @@
 
 int main(void)
 {
-	return tgkill(-1, -1, SIGCONT);
+  return tgkill(-1, -1, SIGCONT);
 }

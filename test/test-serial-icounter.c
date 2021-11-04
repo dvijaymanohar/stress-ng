@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	struct serial_icounter_struct counter = { };
-
-	(void)counter;
-
-	return 0;
+  struct serial_icounter_struct counter = { };
+  (void)counter;
+  return 0;
 }

@@ -25,7 +25,6 @@
 
 int main(void)
 {
-	extern char __executable_start;
-
-	return __executable_start;
+  extern char __executable_start;
+  return __executable_start;
 }

@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return __ppc_get_timebase();
+  return __ppc_get_timebase();
 }

@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_audioout a;
-
-	(void)a;
-
-	return sizeof(a);
+  struct v4l2_audioout a;
+  (void)a;
+  return sizeof(a);
 }

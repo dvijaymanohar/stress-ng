@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_volctrl v;
-
-	(void)v;
-
-	return sizeof(v);
+  struct cdrom_volctrl v;
+  (void)v;
+  return sizeof(v);
 }

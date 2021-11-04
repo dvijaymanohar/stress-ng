@@ -25,10 +25,8 @@
 
 int main(int argc, char **argv)
 {
-	char data[256];
-
-	__builtin_prefetch(&data[0], 0, 0);
-
-	return 0;
+  char data[256];
+  __builtin_prefetch(&data[0], 0, 0);
+  return 0;
 }
 

@@ -24,19 +24,17 @@
  */
 #define  _GNU_SOURCE
 #ifndef _LARGEFILE_SOURCE
-#define _LARGEFILE_SOURCE
+  #define _LARGEFILE_SOURCE
 #endif
 #ifndef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE
+  #define _LARGEFILE64_SOURCE
 #endif
 
 #include <sys/types.h>
 
 int main(void)
 {
-	off64_t offset = 0;
-
-	(void)offset;
-
-	return 0;
+  off64_t offset = 0;
+  (void)offset;
+  return 0;
 }

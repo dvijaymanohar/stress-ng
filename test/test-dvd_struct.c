@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	dvd_struct d;
-
-	(void)d;
-
-	return sizeof(d);
+  dvd_struct d;
+  (void)d;
+  return sizeof(d);
 }

@@ -28,11 +28,9 @@
 
 int main(void)
 {
-	struct iphdr my_iphdr = { };
-	struct icmphdr my_icmphdr = { };
-
-	(void)my_iphdr;
-	(void)my_icmphdr;
-
-	return sizeof(struct iphdr) + sizeof(struct icmphdr);
+  struct iphdr my_iphdr = { };
+  struct icmphdr my_icmphdr = { };
+  (void)my_iphdr;
+  (void)my_icmphdr;
+  return sizeof(struct iphdr) + sizeof(struct icmphdr);
 }

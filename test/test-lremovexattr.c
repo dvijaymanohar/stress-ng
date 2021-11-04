@@ -29,5 +29,5 @@ extern int lremovexattr(const char *path, const char *name);
 
 int main(void)
 {
-	return lremovexattr("examplefile", "name");
+  return lremovexattr("examplefile", "name");
 }

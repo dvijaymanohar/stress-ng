@@ -27,21 +27,18 @@
 #include <signal.h>
 #include <stdio.h>
 
-#define STACK_SIZE	(65536)
+#define STACK_SIZE  (65536)
 
 static int clone_child(void *arg)
 {
-	(void)arg;
-
-	return 0;
+  (void)arg;
+  return 0;
 }
 
 int main(void)
 {
-	pid_t pid;
-	static unsigned long stack[STACK_SIZE];
-
-	pid = clone(clone_child, &stack[STACK_SIZE - 1], SIGCHLD | CLONE_VM, NULL);
-
-	return pid;
+  pid_t pid;
+  static unsigned long stack[STACK_SIZE];
+  pid = clone(clone_child, &stack[STACK_SIZE - 1], SIGCHLD | CLONE_VM, NULL);
+  return pid;
 }

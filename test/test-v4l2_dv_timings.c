@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_dv_timings t;
-
-	(void)t;
-
-	return sizeof(t);
+  struct v4l2_dv_timings t;
+  (void)t;
+  return sizeof(t);
 }

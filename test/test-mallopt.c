@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return mallopt(M_MMAP_THRESHOLD, 1024*1024);
+  return mallopt(M_MMAP_THRESHOLD, 1024 * 1024);
 }

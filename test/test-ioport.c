@@ -26,19 +26,20 @@
 
 #include <sys/io.h>
 
-#define IO_PORT		0x80
+#define IO_PORT   0x80
 
 int main(void)
 {
-	int ret;
-
-	ret = ioperm(IO_PORT, 1, 1);
-	if (ret < 0)
-		return 1;
-
-	ret = inb(IO_PORT);
-	outb(0xff, IO_PORT);
-	(void)ioperm(IO_PORT, 1, 0);
-
-	return ret;
+  int ret;
+  ret = ioperm(IO_PORT, 1, 1);
+  
+  if (ret < 0)
+  {
+    return 1;
+  }
+  
+  ret = inb(IO_PORT);
+  outb(0xff, IO_PORT);
+  (void)ioperm(IO_PORT, 1, 0);
+  return ret;
 }

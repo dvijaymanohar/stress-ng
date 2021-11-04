@@ -28,15 +28,13 @@
 #include <signal.h>
 
 #if defined(__gnu_hurd__)
-#error sigqueue is defined but not implemented and will always fail
+  #error sigqueue is defined but not implemented and will always fail
 #endif
 
 int main(void)
 {
-	const pid_t pid = getpid();
-	union sigval value;
-
-	value.sival_int = 0;
-
-	return sigqueue(pid, SIGALRM, value);
+  const pid_t pid = getpid();
+  union sigval value;
+  value.sival_int = 0;
+  return sigqueue(pid, SIGALRM, value);
 }

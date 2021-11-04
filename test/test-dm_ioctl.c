@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct dm_ioctl d;
-
-	(void)d;
-
-	return sizeof(d);
+  struct dm_ioctl d;
+  (void)d;
+  return sizeof(d);
 }

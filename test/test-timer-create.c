@@ -30,18 +30,16 @@
 
 int main(void)
 {
-	struct sigevent sev = { 0 };
-	struct timespec t = { 0 };
-	timer_t timerid;
-
-	sev.sigev_notify = SIGEV_SIGNAL;
-	sev.sigev_signo = SIGRTMIN;
-	sev.sigev_value.sival_ptr = &timerid;
-
+  struct sigevent sev = { 0 };
+  struct timespec t = { 0 };
+  timer_t timerid;
+  sev.sigev_notify = SIGEV_SIGNAL;
+  sev.sigev_signo = SIGRTMIN;
+  sev.sigev_value.sival_ptr = &timerid;
 #if defined(CLOCK_REALTIME)
-	return timer_create(CLOCK_REALTIME, &sev, &timerid);
+  return timer_create(CLOCK_REALTIME, &sev, &timerid);
 #elif defined(CLOCK_MONOTONIC)
-	return clock_settime(CLOCK_MONOTONIC, &sev, &timerid);
+  return clock_settime(CLOCK_MONOTONIC, &sev, &timerid);
 #else
 #error no POSIX clock types CLOCK_REALTIME or CLOCK_MONOTONIC
 #endif

@@ -26,8 +26,10 @@
 
 int main(void)
 {
-	if (chroot("/") < 0)
-		return -1;
-
-	return 0;
+  if (chroot("/") < 0)
+  {
+    return -1;
+  }
+  
+  return 0;
 }

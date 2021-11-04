@@ -26,13 +26,17 @@
 
 int main(int argc, char **argv)
 {
-	switch (argc) {
-	case 0:
-		CASE_FALLTHROUGH;
-	case 1:
-		CASE_FALLTHROUGH;
-	default:
-		return 0;
-	}
-	return 1;
+  switch (argc)
+  {
+    case 0:
+      CASE_FALLTHROUGH;
+      
+    case 1:
+      CASE_FALLTHROUGH;
+      
+    default:
+      return 0;
+  }
+  
+  return 1;
 }

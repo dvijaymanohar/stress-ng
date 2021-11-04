@@ -26,7 +26,6 @@
 
 int main(void)
 {
-	struct floppy_fdc_state state;
-
-	return sizeof(state);
+  struct floppy_fdc_state state;
+  return sizeof(state);
 }

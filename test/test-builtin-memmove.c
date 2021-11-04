@@ -25,13 +25,11 @@
 
 int main(int argc, char **argv)
 {
-	void *ptr;
-	unsigned long dst;
-	unsigned long src = ~0;
-
-	ptr = __builtin_memmove(&dst, &src, sizeof(dst));
-	(void)ptr;
-
-	return 0;
+  void *ptr;
+  unsigned long dst;
+  unsigned long src = ~0;
+  ptr = __builtin_memmove(&dst, &src, sizeof(dst));
+  (void)ptr;
+  return 0;
 }
 

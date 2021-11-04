@@ -31,5 +31,5 @@
 
 int main(void)
 {
-	return pkey_mprotect((void *)0, 4096, PROT_NONE, -1);
+  return pkey_mprotect((void *)0, 4096, PROT_NONE, -1);
 }

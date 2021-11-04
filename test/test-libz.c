@@ -26,10 +26,8 @@
 
 int main(void)
 {
-	z_stream strm;
-
-	(void)deflateInit(&strm, Z_DEFAULT_COMPRESSION);
-	(void)deflateEnd(&strm);
-
-	return 0;
+  z_stream strm;
+  (void)deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+  (void)deflateEnd(&strm);
+  return 0;
 }

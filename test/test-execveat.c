@@ -29,12 +29,11 @@
 
 int main(void)
 {
-	char *argv_new[] = { NULL, "--exec-exit", NULL };
-	char *env_new[] = { NULL };
-
-	/* One day this system call will land in glibc.. */
+  char *argv_new[] = { NULL, "--exec-exit", NULL };
+  char *env_new[] = { NULL };
+  /* One day this system call will land in glibc.. */
 #if defined(__NR_execveat)
-	return syscall(__NR_execveat, 0, "/proc/self/exe", argv_new, env_new, AT_EMPTY_PATH);
+  return syscall(__NR_execveat, 0, "/proc/self/exe", argv_new, env_new, AT_EMPTY_PATH);
 #else
 #error no execveat
 #endif

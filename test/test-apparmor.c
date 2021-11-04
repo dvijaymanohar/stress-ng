@@ -27,30 +27,43 @@
 
 int main(void)
 {
-	int ret;
-	aa_kernel_interface *kern_if;
-
-	ret = aa_is_enabled();
-	if (ret < 0)
-		return ret;
-
-	ret = aa_kernel_interface_new(&kern_if, NULL, NULL);
-	if (ret < 0)
-		return ret;
-
-	ret = aa_kernel_interface_load_policy(kern_if, NULL, 0);
-	if (ret < 0)
-		return ret;
-
-	ret = aa_kernel_interface_replace_policy(kern_if, NULL, 0);
-	if (ret < 0)
-		return ret;
-
-	ret = aa_kernel_interface_remove_policy(kern_if, "dummy");
-	if (ret < 0)
-		return ret;
-
-	aa_kernel_interface_unref(kern_if);
-
-	return ret;
+  int ret;
+  aa_kernel_interface *kern_if;
+  ret = aa_is_enabled();
+  
+  if (ret < 0)
+  {
+    return ret;
+  }
+  
+  ret = aa_kernel_interface_new(&kern_if, NULL, NULL);
+  
+  if (ret < 0)
+  {
+    return ret;
+  }
+  
+  ret = aa_kernel_interface_load_policy(kern_if, NULL, 0);
+  
+  if (ret < 0)
+  {
+    return ret;
+  }
+  
+  ret = aa_kernel_interface_replace_policy(kern_if, NULL, 0);
+  
+  if (ret < 0)
+  {
+    return ret;
+  }
+  
+  ret = aa_kernel_interface_remove_policy(kern_if, "dummy");
+  
+  if (ret < 0)
+  {
+    return ret;
+  }
+  
+  aa_kernel_interface_unref(kern_if);
+  return ret;
 }

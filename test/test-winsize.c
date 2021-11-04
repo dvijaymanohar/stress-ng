@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct winsize w;
-
-	(void)w;
-
-	return sizeof(w);
+  struct winsize w;
+  (void)w;
+  return sizeof(w);
 }

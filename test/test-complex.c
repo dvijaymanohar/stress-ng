@@ -27,9 +27,7 @@
 
 int main(void)
 {
-	complex x = 1.0;
-
-	(void)x;
-
-	return 0;
+  complex x = 1.0;
+  (void)x;
+  return 0;
 }

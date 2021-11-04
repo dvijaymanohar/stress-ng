@@ -25,6 +25,6 @@
 
 int main(int argc, char **argv)
 {
-	return __builtin_cpu_is("power9");
+  return __builtin_cpu_is("power9");
 }
 

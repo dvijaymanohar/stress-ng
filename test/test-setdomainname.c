@@ -28,12 +28,14 @@
 
 int main(void)
 {
-	char name[128];
-	int ret;
-
-	ret = getdomainname(name, sizeof(name));
-	if (ret == 0) {
-		ret = setdomainname(name, strlen(name));
-	}
-	return ret;
+  char name[128];
+  int ret;
+  ret = getdomainname(name, sizeof(name));
+  
+  if (ret == 0)
+  {
+    ret = setdomainname(name, strlen(name));
+  }
+  
+  return ret;
 }

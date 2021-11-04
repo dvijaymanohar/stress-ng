@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct fsverity_enable_arg enable;
-
-	(void)enable;
-
-	return sizeof(enable);
+  struct fsverity_enable_arg enable;
+  (void)enable;
+  return sizeof(enable);
 }

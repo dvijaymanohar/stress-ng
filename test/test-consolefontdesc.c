@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct consolefontdesc f;
-
-	(void)f;
-
-	return sizeof(f);
+  struct consolefontdesc f;
+  (void)f;
+  return sizeof(f);
 }

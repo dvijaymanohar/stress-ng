@@ -23,25 +23,23 @@
  *
  */
 #define _GNU_SOURCE
-#define _XOPEN_SOURCE	600
+#define _XOPEN_SOURCE 600
 
 #include <string.h>
 #include <crypt.h>
 
 int main(void)
 {
-	static const char passwd[] = "somerandomtext";
-	static const char salt[] = "examplesalt";
-	char *encrypted;
+  static const char passwd[] = "somerandomtext";
+  static const char salt[] = "examplesalt";
+  char *encrypted;
 #if defined (__linux__)
-	static struct crypt_data data;
-
-	(void)memset(&data, 0, sizeof(data));
-	encrypted = crypt_r(passwd, salt, &data);
+  static struct crypt_data data;
+  (void)memset(&data, 0, sizeof(data));
+  encrypted = crypt_r(passwd, salt, &data);
 #else
-	encrypted = crypt(passwd, salt);
+  encrypted = crypt(passwd, salt);
 #endif
-	(void)encrypted;
-
-	return 0;
+  (void)encrypted;
+  return 0;
 }

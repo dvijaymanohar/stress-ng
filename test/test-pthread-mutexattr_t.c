@@ -29,8 +29,7 @@
 
 int main(void)
 {
-	pthread_mutexattr_t mutex_attr;
-
-	(void)memset(&mutex_attr, 0, sizeof(mutex_attr));
-	return sizeof(mutex_attr);
+  pthread_mutexattr_t mutex_attr;
+  (void)memset(&mutex_attr, 0, sizeof(mutex_attr));
+  return sizeof(mutex_attr);
 }

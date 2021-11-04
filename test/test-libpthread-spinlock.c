@@ -26,14 +26,15 @@
 
 /* The following functions from libpthread are used by stress-ng */
 
-static void *pthread_funcs[] = {
-	(void *)pthread_spin_lock,
-	(void *)pthread_spin_unlock,
-	(void *)pthread_spin_init,
-	(void *)pthread_spin_destroy,
+static void *pthread_funcs[] =
+{
+  (void *)pthread_spin_lock,
+  (void *)pthread_spin_unlock,
+  (void *)pthread_spin_init,
+  (void *)pthread_spin_destroy,
 };
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

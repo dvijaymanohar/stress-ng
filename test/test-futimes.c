@@ -31,16 +31,18 @@
 
 int main(void)
 {
-	static const char *filename = "/tmp/futimes.tmp";
-	int fd, ret;
-
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
-	if (fd < 0)
-		return 1;
-	(void)unlink(filename);
-	ret = futimes(fd, NULL);
-	(void)ret;
-	(void)close(fd);
-
-	return 1;
+  static const char *filename = "/tmp/futimes.tmp";
+  int fd, ret;
+  fd = open(filename, O_RDWR | O_CREAT, 0666);
+  
+  if (fd < 0)
+  {
+    return 1;
+  }
+  
+  (void)unlink(filename);
+  ret = futimes(fd, NULL);
+  (void)ret;
+  (void)close(fd);
+  return 1;
 }

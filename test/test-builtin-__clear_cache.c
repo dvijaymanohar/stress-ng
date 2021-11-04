@@ -25,10 +25,8 @@
 
 int main(int argc, char **argv)
 {
-	static char buffer[4096];
-
-	__builtin___clear_cache(buffer, buffer + sizeof(buffer));
-
-	return 0;
+  static char buffer[4096];
+  __builtin___clear_cache(buffer, buffer + sizeof(buffer));
+  return 0;
 }
 

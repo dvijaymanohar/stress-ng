@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return tcflush(0, 0);
+  return tcflush(0, 0);
 }

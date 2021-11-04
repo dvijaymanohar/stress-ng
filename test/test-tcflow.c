@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return tcflow(0, 0);
+  return tcflow(0, 0);
 }

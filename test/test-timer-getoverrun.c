@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	timer_t timerid = 0;
-
-	return timer_getoverrun(timerid);
+  timer_t timerid = 0;
+  return timer_getoverrun(timerid);
 }

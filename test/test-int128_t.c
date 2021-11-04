@@ -28,8 +28,8 @@
 #if NEED_GNUC(4,0,0)
 int main(void)
 {
-	const __uint128_t ui128 = 0;
-	const __int128_t  i128 = 0;
+  const __uint128_t ui128 = 0;
+  const __int128_t  i128 = 0;
 }
 #else
 #error need GCC 4.0 or above

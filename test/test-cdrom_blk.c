@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_blk b;
-
-	(void)b;
-
-	return sizeof(b);
+  struct cdrom_blk b;
+  (void)b;
+  return sizeof(b);
 }

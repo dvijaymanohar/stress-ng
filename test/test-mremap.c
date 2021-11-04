@@ -29,13 +29,11 @@
 
 int main(void)
 {
-	void *newbuf, *newaddr = NULL;
-	size_t sz = 4096;
-
-	/* semantically not correct, but this is a build check */
-	newbuf = mremap(NULL, sz, sz,
-			MREMAP_FIXED | MREMAP_MAYMOVE, (void *)newaddr);
-	(void)newbuf;
-
-	return 0;
+  void *newbuf, *newaddr = NULL;
+  size_t sz = 4096;
+  /* semantically not correct, but this is a build check */
+  newbuf = mremap(NULL, sz, sz,
+                  MREMAP_FIXED | MREMAP_MAYMOVE, (void *)newaddr);
+  (void)newbuf;
+  return 0;
 }

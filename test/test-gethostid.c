@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return gethostid();
+  return gethostid();
 }

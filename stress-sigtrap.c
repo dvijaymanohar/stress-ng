@@ -24,10 +24,11 @@
  */
 #include "stress-ng.h"
 
-static const stress_help_t help[] = {
-	{ NULL,	"sigtrap N",	 "start N workers generating segmentation faults" },
-	{ NULL,	"sigtrap-ops N", "stop after N bogo segmentation faults" },
-	{ NULL,	NULL,		 NULL }
+static const stress_help_t help[] =
+{
+  { NULL, "sigtrap N",   "start N workers generating segmentation faults" },
+  { NULL, "sigtrap-ops N", "stop after N bogo segmentation faults" },
+  { NULL, NULL,    NULL }
 };
 
 #if defined(SIGTRAP)
@@ -36,66 +37,72 @@ static uint64_t counter;
 
 static void MLOCKED_TEXT stress_sigtrap_handler(int num)
 {
-	(void)num;
-
-	counter++;
+  (void)num;
+  counter++;
 }
 
 /*
  *  stress_sigtrap
- *	stress by generating traps (x86 only)
+ *  stress by generating traps (x86 only)
  */
 static int stress_sigtrap(const stress_args_t *args)
 {
-	counter = 0;
-
-	if (stress_sighandler(args->name, SIGTRAP, stress_sigtrap_handler, NULL) < 0)
-		return EXIT_NO_RESOURCE;
-
-	stress_set_proc_state(args->name, STRESS_STATE_RUN);
-
-	while (keep_stressing(args)) {
-		int ret;
-
-		(void)ret;
-
-		switch (stress_mwc1()) {
-		case 0:
-#if defined(__linux__) &&	\
+  counter = 0;
+  
+  if (stress_sighandler(args->name, SIGTRAP, stress_sigtrap_handler, NULL) < 0)
+  {
+    return EXIT_NO_RESOURCE;
+  }
+  
+  stress_set_proc_state(args->name, STRESS_STATE_RUN);
+  
+  while (keep_stressing(args))
+  {
+    int ret;
+    (void)ret;
+    
+    switch (stress_mwc1())
+    {
+      case 0:
+#if defined(__linux__) && \
     defined(STRESS_ARCH_X86)
-			asm("int $3");
-			break;
+        asm("int $3");
+        break;
 #endif
-		CASE_FALLTHROUGH;
-		default:
-			raise(SIGTRAP);
-			break;
-		}
-		set_counter(args, counter);
-	}
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-
-	return EXIT_SUCCESS;
+        CASE_FALLTHROUGH;
+        
+      default:
+        raise(SIGTRAP);
+        break;
+    }
+    
+    set_counter(args, counter);
+  }
+  
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  return EXIT_SUCCESS;
 }
 
-stressor_info_t stress_sigtrap_info = {
-	.stressor = stress_sigtrap,
-	.class = CLASS_INTERRUPT | CLASS_OS,
-	.help = help
+stressor_info_t stress_sigtrap_info =
+{
+  .stressor = stress_sigtrap,
+  .class = CLASS_INTERRUPT | CLASS_OS,
+  .help = help
 };
 #else
 
 static int stress_sigtrap_supported(const char *name)
 {
-	pr_inf_skip("%s stressor will be skipped, system "
-		"does not support the SIGTRAP signal\n", name);
-	return -1;
+  pr_inf_skip("%s stressor will be skipped, system "
+              "does not support the SIGTRAP signal\n", name);
+  return -1;
 }
 
-stressor_info_t stress_sigtrap_info = {
-        .stressor = stress_not_implemented,
-        .supported = stress_sigtrap_supported,
-	.class = CLASS_INTERRUPT | CLASS_OS,
-        .help = help
+stressor_info_t stress_sigtrap_info =
+{
+  .stressor = stress_not_implemented,
+  .supported = stress_sigtrap_supported,
+  .class = CLASS_INTERRUPT | CLASS_OS,
+  .help = help
 };
 #endif

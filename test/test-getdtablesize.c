@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return getdtablesize();
+  return getdtablesize();
 }

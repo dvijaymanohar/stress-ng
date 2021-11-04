@@ -26,7 +26,6 @@
 
 int main(void)
 {
-	struct floppy_drive_struct drive;
-
-	return sizeof(drive);
+  struct floppy_drive_struct drive;
+  return sizeof(drive);
 }

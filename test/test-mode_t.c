@@ -27,7 +27,6 @@
 
 int main(void)
 {
-	mode_t mode = 0;
-
-	return (int)mode;
+  mode_t mode = 0;
+  return (int)mode;
 }

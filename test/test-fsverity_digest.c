@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct fsverity_digest digest;
-
-	(void)digest;
-
-	return sizeof(digest);
+  struct fsverity_digest digest;
+  (void)digest;
+  return sizeof(digest);
 }

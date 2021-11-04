@@ -24,18 +24,16 @@
  */
 #include <stdint.h>
 
-int __attribute__ ((aligned(64))) test_align64(void);
+int __attribute__((aligned(64))) test_align64(void);
 
 int main(void)
 {
-	const intptr_t addr = (intptr_t)test_align64;
-
-	(void)test_align64();
-
-	return addr & 63;
+  const intptr_t addr = (intptr_t)test_align64;
+  (void)test_align64();
+  return addr & 63;
 }
 
-int __attribute__ ((aligned(64))) test_align64(void)
+int __attribute__((aligned(64))) test_align64(void)
 {
-	return 0;
+  return 0;
 }

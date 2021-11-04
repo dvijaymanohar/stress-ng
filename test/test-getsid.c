@@ -28,5 +28,5 @@
 
 int main(void)
 {
-	return getsid(0);
+  return getsid(0);
 }

@@ -24,19 +24,18 @@
  */
 
 #if !defined(__PPC64__)
-#error ppc64 darn instruction not supported
+  #error ppc64 darn instruction not supported
 #endif
 
 static inline unsigned long rand64(void)
 {
-	unsigned long val;
-
-	/* Unconditioned raw deliver a raw number */
-	asm volatile("darn %0, 0\n" : "=r"(val) :);
-	return val;
+  unsigned long val;
+  /* Unconditioned raw deliver a raw number */
+  asm volatile("darn %0, 0\n" : "=r"(val) :);
+  return val;
 }
 
 int main(void)
 {
-	return (int)rand64();
+  return (int)rand64();
 }

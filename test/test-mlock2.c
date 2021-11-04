@@ -34,7 +34,6 @@ static char buffer[8192];
 
 int main(void)
 {
-	uintptr_t ptr = (((uintptr_t)buffer) & ~(4096 -1));
-
-	return syscall(__NR_mlock2, (void *)ptr, 4096, 0);
+  uintptr_t ptr = (((uintptr_t)buffer) & ~(4096 - 1));
+  return syscall(__NR_mlock2, (void *)ptr, 4096, 0);
 }

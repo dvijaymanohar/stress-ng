@@ -24,21 +24,22 @@
  */
 #include "stress-ng.h"
 
-static const stress_help_t help[] = {
-	{ NULL,	"getrandom N",	   "start N workers fetching random data via getrandom()" },
-	{ NULL,	"getrandom-ops N", "stop after N getrandom bogo operations" },
-	{ NULL, NULL,		   NULL }
+static const stress_help_t help[] =
+{
+  { NULL, "getrandom N",     "start N workers fetching random data via getrandom()" },
+  { NULL, "getrandom-ops N", "stop after N getrandom bogo operations" },
+  { NULL, NULL,      NULL }
 };
 
-#if defined(__OpenBSD__) || 	\
-    defined(__APPLE__) || 	\
+#if defined(__OpenBSD__) ||   \
+    defined(__APPLE__) ||   \
     (defined(__linux__) && defined(__NR_getrandom))
 
-#if defined(__OpenBSD__) ||	\
-    defined(__APPLE__)
-#define RANDOM_BUFFER_SIZE	(256)
+#if defined(__OpenBSD__) || \
+  defined(__APPLE__)
+  #define RANDOM_BUFFER_SIZE  (256)
 #else
-#define RANDOM_BUFFER_SIZE	(8192)
+  #define RANDOM_BUFFER_SIZE  (8192)
 #endif
 
 /*
@@ -47,115 +48,131 @@ static const stress_help_t help[] = {
  */
 static int stress_getrandom_supported(const char *name)
 {
-	int ret;
-	char buffer[RANDOM_BUFFER_SIZE];
-
-	ret = shim_getrandom(buffer, sizeof(buffer), 0);
-	if ((ret < 0) && (errno == ENOSYS)) {
-		pr_inf_skip("%s stressor will be skipped, getrandom() not supported\n", name);
-		return -1;
-	}
-	return 0;
+  int ret;
+  char buffer[RANDOM_BUFFER_SIZE];
+  ret = shim_getrandom(buffer, sizeof(buffer), 0);
+  
+  if ((ret < 0) && (errno == ENOSYS))
+  {
+    pr_inf_skip("%s stressor will be skipped, getrandom() not supported\n", name);
+    return -1;
+  }
+  
+  return 0;
 }
 
-typedef struct {
-	unsigned int flag;
-	const char *flag_str;
+typedef struct
+{
+  unsigned int flag;
+  const char *flag_str;
 } getrandom_flags_t ;
 
 #define GETRANDOM_FLAG_INFO(x)      { x, # x }
 
-static const getrandom_flags_t getrandom_flags[] = {
-	GETRANDOM_FLAG_INFO(0),
-#if defined(GRND_NONBLOCK) &&	\
+static const getrandom_flags_t getrandom_flags[] =
+{
+  GETRANDOM_FLAG_INFO(0),
+#if defined(GRND_NONBLOCK) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_NONBLOCK),
+  GETRANDOM_FLAG_INFO(GRND_NONBLOCK),
 #endif
-#if defined(GRND_RANDOM) &&	\
+#if defined(GRND_RANDOM) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_RANDOM),
+  GETRANDOM_FLAG_INFO(GRND_RANDOM),
 #endif
-#if defined(GRND_INSECURE) &&	\
+#if defined(GRND_INSECURE) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_INSECURE),
+  GETRANDOM_FLAG_INFO(GRND_INSECURE),
 #endif
-#if defined(GRND_INSECURE) &&	\
+#if defined(GRND_INSECURE) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_INSECURE),
+  GETRANDOM_FLAG_INFO(GRND_INSECURE),
 #endif
-#if defined(GRND_INSECURE) &&	\
-    defined(GRND_NONBLOCK) &&	\
+#if defined(GRND_INSECURE) && \
+    defined(GRND_NONBLOCK) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_NONBLOCK | GRND_INSECURE),
+  GETRANDOM_FLAG_INFO(GRND_NONBLOCK | GRND_INSECURE),
 #endif
-#if defined(GRND_NONBLOCK) &&	\
-    defined(GRND_RANDOM) &&	\
+#if defined(GRND_NONBLOCK) && \
+    defined(GRND_RANDOM) && \
     defined(__linux__)
-	GETRANDOM_FLAG_INFO(GRND_NONBLOCK | GRND_RANDOM),
+  GETRANDOM_FLAG_INFO(GRND_NONBLOCK | GRND_RANDOM),
 #endif
-#if defined(GRND_INSECURE) &&	\
-    defined(GRND_RANDOM) &&	\
+#if defined(GRND_INSECURE) && \
+    defined(GRND_RANDOM) && \
     defined(__linux__)
-	/* exercise invalid flag combination */
-	GETRANDOM_FLAG_INFO(GRND_INSECURE | GRND_RANDOM),
+  /* exercise invalid flag combination */
+  GETRANDOM_FLAG_INFO(GRND_INSECURE | GRND_RANDOM),
 #endif
-	/* exercise all flags illegal flag combination */
-	GETRANDOM_FLAG_INFO(~0U),
+  /* exercise all flags illegal flag combination */
+  GETRANDOM_FLAG_INFO(~0U),
 };
 
 /*
  *  stress_getrandom
- *	stress reading random values using getrandom()
+ *  stress reading random values using getrandom()
  */
 static int stress_getrandom(const stress_args_t *args)
 {
-	stress_set_proc_state(args->name, STRESS_STATE_RUN);
-
-	do {
-		char buffer[RANDOM_BUFFER_SIZE];
-		size_t i;
-
-		for (i = 0; keep_stressing(args) && (i < SIZEOF_ARRAY(getrandom_flags)); i++) {
-			ssize_t ret;
-
-			ret = shim_getrandom(buffer, sizeof(buffer), getrandom_flags[i].flag);
-			if (ret < 0) {
-				if ((errno == EAGAIN) ||
-				    (errno == EINTR) ||
-				    (errno == EINVAL))
-					continue;
-				if (errno == ENOSYS) {
-					/* Should not happen.. */
-					if (args->instance == 0)
-						pr_inf_skip("%s: stressor will be skipped, "
-							"getrandom() not supported\n",
-							args->name);
-					return EXIT_NOT_IMPLEMENTED;
-				}
-				pr_fail("%s: getrandom using flags %s failed, errno=%d (%s)\n",
-					args->name, getrandom_flags[i].flag_str,
-					errno, strerror(errno));
-				return EXIT_FAILURE;
-			}
-			inc_counter(args);
-		}
-	} while (keep_stressing(args));
-
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-
-	return EXIT_SUCCESS;
+  stress_set_proc_state(args->name, STRESS_STATE_RUN);
+  
+  do
+  {
+    char buffer[RANDOM_BUFFER_SIZE];
+    size_t i;
+    
+    for (i = 0; keep_stressing(args) && (i < SIZEOF_ARRAY(getrandom_flags)); i++)
+    {
+      ssize_t ret;
+      ret = shim_getrandom(buffer, sizeof(buffer), getrandom_flags[i].flag);
+      
+      if (ret < 0)
+      {
+        if ((errno == EAGAIN) ||
+            (errno == EINTR) ||
+            (errno == EINVAL))
+        {
+          continue;
+        }
+        
+        if (errno == ENOSYS)
+        {
+          /* Should not happen.. */
+          if (args->instance == 0)
+            pr_inf_skip("%s: stressor will be skipped, "
+                        "getrandom() not supported\n",
+                        args->name);
+                        
+          return EXIT_NOT_IMPLEMENTED;
+        }
+        
+        pr_fail("%s: getrandom using flags %s failed, errno=%d (%s)\n",
+                args->name, getrandom_flags[i].flag_str,
+                errno, strerror(errno));
+        return EXIT_FAILURE;
+      }
+      
+      inc_counter(args);
+    }
+  }
+  while (keep_stressing(args));
+  
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  return EXIT_SUCCESS;
 }
 
-stressor_info_t stress_getrandom_info = {
-	.stressor = stress_getrandom,
-	.supported = stress_getrandom_supported,
-	.class = CLASS_OS | CLASS_CPU,
-	.help = help
+stressor_info_t stress_getrandom_info =
+{
+  .stressor = stress_getrandom,
+  .supported = stress_getrandom_supported,
+  .class = CLASS_OS | CLASS_CPU,
+  .help = help
 };
 #else
-stressor_info_t stress_getrandom_info = {
-	.stressor = stress_not_implemented,
-	.class = CLASS_OS | CLASS_CPU,
-	.help = help
+stressor_info_t stress_getrandom_info =
+{
+  .stressor = stress_not_implemented,
+  .class = CLASS_OS | CLASS_CPU,
+  .help = help
 };
 #endif

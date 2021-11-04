@@ -29,8 +29,7 @@
 
 int main(void)
 {
-	int fd_in = 3;
-	int fd_out = 4;
-
-	return tee(fd_in, fd_out, ~0, 0);
+  int fd_in = 3;
+  int fd_out = 4;
+  return tee(fd_in, fd_out, ~0, 0);
 }

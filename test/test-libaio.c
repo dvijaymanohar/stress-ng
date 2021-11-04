@@ -26,14 +26,15 @@
 
 /* The following functions from librt are used by stress-ng */
 
-static void *aio_funcs[] = {
-	io_setup,
-	io_destroy,
-	io_submit,
-	io_getevents
+static void *aio_funcs[] =
+{
+  io_setup,
+  io_destroy,
+  io_submit,
+  io_getevents
 };
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

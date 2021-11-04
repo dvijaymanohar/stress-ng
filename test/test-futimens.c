@@ -30,24 +30,26 @@
 #include <unistd.h>
 
 #if !defined(UTIME_NOW)
-#error futimens missing UTIME_NOW
+  #error futimens missing UTIME_NOW
 #endif
 #if !defined(UTIME_OMIT)
-#error futimens missing UTIME_OMIT
+  #error futimens missing UTIME_OMIT
 #endif
 
 int main(void)
 {
-	static const char *filename = "/tmp/futimes.tmp";
-	int fd, ret;
-
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
-	if (fd < 0)
-		return 1;
-	(void)unlink(filename);
-	ret = futimens(fd, NULL);
-	(void)ret;
-	(void)close(fd);
-
-	return 1;
+  static const char *filename = "/tmp/futimes.tmp";
+  int fd, ret;
+  fd = open(filename, O_RDWR | O_CREAT, 0666);
+  
+  if (fd < 0)
+  {
+    return 1;
+  }
+  
+  (void)unlink(filename);
+  ret = futimens(fd, NULL);
+  (void)ret;
+  (void)close(fd);
+  return 1;
 }

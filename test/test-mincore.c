@@ -30,13 +30,12 @@
 static char buffer[8192];
 
 #if defined(__gnu_hurd__)
-#error mincore is defined but not implemented and will always fail
+  #error mincore is defined but not implemented and will always fail
 #endif
 
 int main(void)
 {
-	unsigned char vec[1];
-	uintptr_t ptr = (((uintptr_t)buffer) & ~(4096 -1));
-
-	return mincore((void *)ptr, sizeof(vec), vec);
+  unsigned char vec[1];
+  uintptr_t ptr = (((uintptr_t)buffer) & ~(4096 - 1));
+  return mincore((void *)ptr, sizeof(vec), vec);
 }

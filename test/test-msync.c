@@ -31,44 +31,50 @@
 #include <sys/mman.h>
 
 #if defined(__gnu_hurd__)
-#error msync is defined but not implemented and will always fail
+  #error msync is defined but not implemented and will always fail
 #endif
 
 int main(void)
 {
-	char buffer[8192];
-	static const char *filename = "/tmp/test-msync.tmp";
-	int fd, ret, err = 1;
-	void *ptr;
-	ssize_t rc;
-	const size_t sz = sizeof buffer;
-
-	(void)memset(buffer, 0, sizeof(buffer));
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
-	if (fd < 0)
-		return 1;
-	(void)unlink(filename);
-
-	rc = write(fd, buffer, sz);
-	if (rc != (ssize_t)sz) {
-		goto err;
-	}
-	ptr = mmap(NULL, sz, PROT_READ | PROT_WRITE,
-		MAP_PRIVATE, fd, 0);
-	if (ptr == MAP_FAILED)
-		goto err;
-
-	ret = msync(ptr, sz, MS_ASYNC);
-	(void)ret;
-	ret = msync(ptr, sz, MS_SYNC);
-	(void)ret;
-	ret = msync(ptr, sz, MS_INVALIDATE);
-	(void)ret;
-
-	(void)munmap(ptr, sz);
-	err = 0;
+  char buffer[8192];
+  static const char *filename = "/tmp/test-msync.tmp";
+  int fd, ret, err = 1;
+  void *ptr;
+  ssize_t rc;
+  const size_t sz = sizeof buffer;
+  (void)memset(buffer, 0, sizeof(buffer));
+  fd = open(filename, O_RDWR | O_CREAT, 0666);
+  
+  if (fd < 0)
+  {
+    return 1;
+  }
+  
+  (void)unlink(filename);
+  rc = write(fd, buffer, sz);
+  
+  if (rc != (ssize_t)sz)
+  {
+    goto err;
+  }
+  
+  ptr = mmap(NULL, sz, PROT_READ | PROT_WRITE,
+             MAP_PRIVATE, fd, 0);
+             
+  if (ptr == MAP_FAILED)
+  {
+    goto err;
+  }
+  
+  ret = msync(ptr, sz, MS_ASYNC);
+  (void)ret;
+  ret = msync(ptr, sz, MS_SYNC);
+  (void)ret;
+  ret = msync(ptr, sz, MS_INVALIDATE);
+  (void)ret;
+  (void)munmap(ptr, sz);
+  err = 0;
 err:
-	(void)close(fd);
-
-	return err;
+  (void)close(fd);
+  return err;
 }

@@ -28,5 +28,5 @@ __kernel_long_t kl;
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

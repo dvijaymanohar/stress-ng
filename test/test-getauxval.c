@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return getauxval(0);
+  return getauxval(0);
 }

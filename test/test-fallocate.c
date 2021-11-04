@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return fallocate(0, 0, 0, 4096);
+  return fallocate(0, 0, 0, 4096);
 }

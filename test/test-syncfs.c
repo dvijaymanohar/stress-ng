@@ -30,24 +30,29 @@
 #include <fcntl.h>
 
 #if defined(__FreeBSD_kernel__)
-#error syncfs is not implemented with FreeBSD kernel
+  #error syncfs is not implemented with FreeBSD kernel
 #endif
 
 int main(void)
 {
-	static const char *filename = "/tmp/test-syncfs.tmp";
-	int fd, err = 1;
-
-	fd = open(filename, O_RDWR | O_CREAT, 0666);
-	if (fd < 0)
-		return 1;
-	(void)unlink(filename);
-
-	if (syncfs(fd) < 0)
-		goto err;
-	err = 0;
+  static const char *filename = "/tmp/test-syncfs.tmp";
+  int fd, err = 1;
+  fd = open(filename, O_RDWR | O_CREAT, 0666);
+  
+  if (fd < 0)
+  {
+    return 1;
+  }
+  
+  (void)unlink(filename);
+  
+  if (syncfs(fd) < 0)
+  {
+    goto err;
+  }
+  
+  err = 0;
 err:
-	(void)close(fd);
-
-	return err;
+  (void)close(fd);
+  return err;
 }

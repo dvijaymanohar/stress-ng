@@ -30,14 +30,14 @@
 #include <features.h>
 #include "../stress-version.h"
 #if !(NEED_GLIBC(2,14,0))
-#include <sys/syscall.h>
+  #include <sys/syscall.h>
 #endif
 
 int main(void)
 {
 #if NEED_GLIBC(2,14,0)
-	return unshare(0);
+  return unshare(0);
 #else
-	return syscall(__NR_unshare, 0);
+  return syscall(__NR_unshare, 0);
 #endif
 }

@@ -29,16 +29,15 @@
 #include <features.h>
 #include "../stress-version.h"
 #if !(NEED_GLIBC(2,27,0))
-#include <sys/syscall.h>
+  #include <sys/syscall.h>
 #endif
 
 int main(void)
 {
 #if NEED_GLIBC(2,27,0)
-	extern int memfd_create(const char *name, unsigned int flags);
-
-	return memfd_create("testmfd", 0);
+  extern int memfd_create(const char *name, unsigned int flags);
+  return memfd_create("testmfd", 0);
 #else
-	return syscall(__NR_memfd_create, "testmfd", 0);
+  return syscall(__NR_memfd_create, "testmfd", 0);
 #endif
 }

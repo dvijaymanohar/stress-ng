@@ -24,16 +24,25 @@
  */
 #include <math.h>
 
-#define LIKELY(x)	__builtin_expect((x),1)
-#define UNLIKELY(x)	__builtin_expect((x),0)
+#define LIKELY(x) __builtin_expect((x),1)
+#define UNLIKELY(x) __builtin_expect((x),0)
 
 int main(int argc, char **argv)
 {
-	if (LIKELY(argc == 1))
-		return 0;
-	if (LIKELY(argc > 0))
-		return 1;
-	if (UNLIKELY(argc < 0))
-		return -1;
-	return 0;
+  if (LIKELY(argc == 1))
+  {
+    return 0;
+  }
+  
+  if (LIKELY(argc > 0))
+  {
+    return 1;
+  }
+  
+  if (UNLIKELY(argc < 0))
+  {
+    return -1;
+  }
+  
+  return 0;
 }

@@ -29,8 +29,7 @@ extern ssize_t flistxattr(int fd, char *list, size_t size);
 
 int main(void)
 {
-	int fd = 3;
-	char list[1024];
-
-	return flistxattr(fd, list, sizeof(list));
+  int fd = 3;
+  char list[1024];
+  return flistxattr(fd, list, sizeof(list));
 }

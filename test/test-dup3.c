@@ -28,34 +28,42 @@
 #include <unistd.h>
 
 #if defined(__FreeBSD_kernel__)
-#error dup3 is not implemented with FreeBSD kernel
+  #error dup3 is not implemented with FreeBSD kernel
 #endif
 
 int main(void)
 {
-	int fd1, fd2, fd3, ret = 1;
-
-	fd1 = open("/dev/zero", O_RDONLY);
-	if (fd1 < 0)
-		goto err0;
-
-	fd2 = open("/dev/null", O_WRONLY);
-	if (fd2 < 0)
-		goto err1;
-
-	/* fd2 is closed by the dup3 */
-	fd3 = dup3(fd1, fd2, O_CLOEXEC);
-	if (fd3 < 0)
-		goto err2;
-	fd2 = fd3;
-	(void)close(fd3);
-
-	ret = 0;
-	goto err1:
+  int fd1, fd2, fd3, ret = 1;
+  fd1 = open("/dev/zero", O_RDONLY);
+  
+  if (fd1 < 0)
+  {
+    goto err0;
+  }
+  
+  fd2 = open("/dev/null", O_WRONLY);
+  
+  if (fd2 < 0)
+  {
+    goto err1;
+  }
+  
+  /* fd2 is closed by the dup3 */
+  fd3 = dup3(fd1, fd2, O_CLOEXEC);
+  
+  if (fd3 < 0)
+  {
+    goto err2;
+  }
+  
+  fd2 = fd3;
+  (void)close(fd3);
+  ret = 0;
+goto err1:
 err2:
-	(void)close(fd2);
+  (void)close(fd2);
 err1:
-	(void)close(fd1);
+  (void)close(fd1);
 err0:
-	return ret;
+  return ret;
 }

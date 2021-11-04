@@ -26,5 +26,5 @@
 
 int main(void)
 {
-	return linkat(0, "a", 1, "b", 0);
+  return linkat(0, "a", 1, "b", 0);
 }

@@ -31,5 +31,5 @@
 
 int main(void)
 {
-	return pkey_free(0);
+  return pkey_free(0);
 }

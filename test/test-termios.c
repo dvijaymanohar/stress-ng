@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct termios t;
-
-	(void)t;
-
-	return sizeof(t);
+  struct termios t;
+  (void)t;
+  return sizeof(t);
 }

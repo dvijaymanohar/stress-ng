@@ -30,6 +30,5 @@
 
 int main(void)
 {
-
-       return pidfd_open(getpid(), 0);
+  return pidfd_open(getpid(), 0);
 }

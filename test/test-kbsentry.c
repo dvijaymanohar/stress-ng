@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct kbsentry m;
-
-	(void)m;
-
-	return sizeof(m);
+  struct kbsentry m;
+  (void)m;
+  return sizeof(m);
 }

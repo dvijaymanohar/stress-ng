@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct kbentry k;
-
-	(void)k;
-
-	return sizeof(k);
+  struct kbentry k;
+  (void)k;
+  return sizeof(k);
 }

@@ -36,7 +36,7 @@
 
 int main(int argc, char *argv[], char *envp[])
 {
-	setproctitle_init(argc, argv, envp);
-	setproctitle("-%s", "this is a test");
-	return 0;
+  setproctitle_init(argc, argv, envp);
+  setproctitle("-%s", "this is a test");
+  return 0;
 }

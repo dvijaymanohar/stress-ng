@@ -27,6 +27,6 @@
 
 int main(void)
 {
-	struct utsname buf;
-	return uname(&buf);
+  struct utsname buf;
+  return uname(&buf);
 }

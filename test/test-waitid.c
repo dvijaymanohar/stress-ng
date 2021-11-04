@@ -30,7 +30,6 @@
 
 int main(void)
 {
-	siginfo_t info;
-
-	return waitid(P_PID, getpid(), &info, 0);
+  siginfo_t info;
+  return waitid(P_PID, getpid(), &info, 0);
 }

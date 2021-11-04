@@ -25,10 +25,8 @@
 
 int main(int argc, char **argv)
 {
-	int var = 5;
-
-	__atomic_clear(&var, 0);
-
-	return 0;
+  int var = 5;
+  __atomic_clear(&var, 0);
+  return 0;
 }
 

@@ -32,9 +32,8 @@
     defined(__ARM_ARCH_8A__)  || defined(__aarch64__)
 int main(void)
 {
-	__asm__ __volatile__("yield;\n");
-
-	return 0;
+  __asm__ __volatile__("yield;\n");
+  return 0;
 }
 #else
 #error not an ARM so no yield instruction

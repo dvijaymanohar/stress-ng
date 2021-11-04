@@ -29,7 +29,6 @@ extern ssize_t lgetxattr(const char *path, const char *name, void *value, size_t
 
 int main(void)
 {
-	char value[] = "valuestring";
-
-	return lgetxattr("/some/path/to/somewhere", "name", value, sizeof(value));
+  char value[] = "valuestring";
+  return lgetxattr("/some/path/to/somewhere", "name", value, sizeof(value));
 }

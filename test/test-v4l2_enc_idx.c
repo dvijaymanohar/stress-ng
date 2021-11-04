@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_enc_idx i;
-
-	(void)i;
-
-	return sizeof(i);
+  struct v4l2_enc_idx i;
+  (void)i;
+  return sizeof(i);
 }

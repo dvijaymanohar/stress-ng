@@ -29,8 +29,7 @@
 
 int main(void)
 {
-	timer_t timerid = 0;
-	struct itimerspec value;
-
-	return timer_gettime(timerid, &value);
+  timer_t timerid = 0;
+  struct itimerspec value;
+  return timer_gettime(timerid, &value);
 }

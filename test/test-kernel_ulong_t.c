@@ -28,5 +28,5 @@ __kernel_ulong_t kul;
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

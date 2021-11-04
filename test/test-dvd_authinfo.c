@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	dvd_authinfo a;
-
-	(void)a;
-
-	return sizeof(a);
+  dvd_authinfo a;
+  (void)a;
+  return sizeof(a);
 }

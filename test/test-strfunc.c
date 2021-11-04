@@ -35,11 +35,12 @@
 #include <bsd/string.h>
 #endif
 
-static void *funcs[] = {
-	STRFUNC,
+static void *funcs[] =
+{
+  STRFUNC,
 };
 
 int main(void)
 {
-	return (ptrdiff_t)(funcs[0] == 0);
+  return (ptrdiff_t)(funcs[0] == 0);
 }

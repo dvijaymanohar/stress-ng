@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_jpegcompression j;
-
-	(void)j;
-
-	return sizeof(j);
+  struct v4l2_jpegcompression j;
+  (void)j;
+  return sizeof(j);
 }

@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct vt_consize vc;
-
-	(void)vc;
-
-	return sizeof(vc);
+  struct vt_consize vc;
+  (void)vc;
+  return sizeof(vc);
 }

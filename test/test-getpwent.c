@@ -28,10 +28,13 @@
 
 int main(void)
 {
-	struct passwd *pw;
-
-	pw = getpwent();
-	if (pw)
-		return 0;
-	return 1;
+  struct passwd *pw;
+  pw = getpwent();
+  
+  if (pw)
+  {
+    return 0;
+  }
+  
+  return 1;
 }

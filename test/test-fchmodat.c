@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return fchmodat(0, "", 0, 0);
+  return fchmodat(0, "", 0, 0);
 }

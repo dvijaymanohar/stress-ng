@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return nice(0);
+  return nice(0);
 }

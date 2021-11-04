@@ -29,9 +29,7 @@
 
 int main(void)
 {
-	struct rusage usage;
-
-	(void)memset(&usage, 0, sizeof(usage));
-
-	return usage.ru_nvcsw;
+  struct rusage usage;
+  (void)memset(&usage, 0, sizeof(usage));
+  return usage.ru_nvcsw;
 }

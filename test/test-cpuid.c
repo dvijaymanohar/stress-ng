@@ -31,11 +31,9 @@
 
 int main(void)
 {
-	uint32_t eax, ebx, ecx, edx;
-
-	__cpuid(0, eax, ebx, ecx, edx);
-
-	return 0;
+  uint32_t eax, ebx, ecx, edx;
+  __cpuid(0, eax, ebx, ecx, edx);
+  return 0;
 }
 #else
 #error non-x86 platform, cpuid not supported

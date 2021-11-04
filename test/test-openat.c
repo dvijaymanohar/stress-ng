@@ -30,5 +30,5 @@
 
 int main(void)
 {
-	return openat(AT_FDCWD, "test", O_RDWR);
+  return openat(AT_FDCWD, "test", O_RDWR);
 }

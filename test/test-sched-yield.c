@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return sched_yield();
+  return sched_yield();
 }

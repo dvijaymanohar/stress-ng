@@ -27,6 +27,5 @@
 
 int main(void)
 {
-	return setfsgid(-1);
-
+  return setfsgid(-1);
 }

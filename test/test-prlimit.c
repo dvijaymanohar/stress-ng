@@ -31,8 +31,7 @@
 
 int main(void)
 {
-	struct rlimit old_rlim;
-	const pid_t pid = getpid();
-
-	return prlimit(pid, RLIMIT_CPU, NULL, &old_rlim);
+  struct rlimit old_rlim;
+  const pid_t pid = getpid();
+  return prlimit(pid, RLIMIT_CPU, NULL, &old_rlim);
 }

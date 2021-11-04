@@ -27,6 +27,5 @@
 
 int main(void)
 {
-	return setfsuid(-1);
-
+  return setfsuid(-1);
 }

@@ -29,11 +29,8 @@
 
 int main(void)
 {
-	struct user_desc u_info;
-
-	(void)memset(&u_info, 0, sizeof(u_info));
-
-	(void)u_info;
-
-	return 0;
+  struct user_desc u_info;
+  (void)memset(&u_info, 0, sizeof(u_info));
+  (void)u_info;
+  return 0;
 }

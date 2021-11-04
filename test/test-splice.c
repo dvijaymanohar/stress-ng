@@ -30,9 +30,7 @@
 
 int main(void)
 {
-	int fd_in = 3;
-	int fd_out = 4;
-
-	return splice(fd_in, NULL, fd_out, NULL, 1024, 0);
-
+  int fd_in = 3;
+  int fd_out = 4;
+  return splice(fd_in, NULL, fd_out, NULL, 1024, 0);
 }

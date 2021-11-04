@@ -24,18 +24,16 @@
  */
 #include <stdint.h>
 
-int __attribute__ ((aligned(65536))) test_align64K(void);
+int __attribute__((aligned(65536))) test_align64K(void);
 
 int main(void)
 {
-	const intptr_t addr = (intptr_t)test_align64K;
-
-	(void)test_align64K();
-
-	return addr & 65535;
+  const intptr_t addr = (intptr_t)test_align64K;
+  (void)test_align64K();
+  return addr & 65535;
 }
 
-int __attribute__ ((aligned(65536))) test_align64K(void)
+int __attribute__((aligned(65536))) test_align64K(void)
 {
-	return 0;
+  return 0;
 }

@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	struct ifconf ifc = { };
-
-	(void)ifc;
-
-	return sizeof(ifc);
+  struct ifconf ifc = { };
+  (void)ifc;
+  return sizeof(ifc);
 }

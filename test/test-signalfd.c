@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	sigset_t mask;
-
-	(void)memset(&mask, 0, sizeof(mask));
-
-	return signalfd(0, &mask, 0);
+  sigset_t mask;
+  (void)memset(&mask, 0, sizeof(mask));
+  return signalfd(0, &mask, 0);
 }

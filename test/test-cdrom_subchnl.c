@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_subchnl s;
-
-	(void)s;
-
-	return sizeof(s);
+  struct cdrom_subchnl s;
+  (void)s;
+  return sizeof(s);
 }

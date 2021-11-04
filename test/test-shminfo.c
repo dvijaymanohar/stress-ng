@@ -29,9 +29,7 @@
 
 int main(void)
 {
-	struct shminfo info = { };
-
-	(void)info;
-
-	return 0;
+  struct shminfo info = { };
+  (void)info;
+  return 0;
 }

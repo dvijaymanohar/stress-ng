@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct media_device_info m;
-
-	(void)m;
-
-	return sizeof(m);
+  struct media_device_info m;
+  (void)m;
+  return sizeof(m);
 }

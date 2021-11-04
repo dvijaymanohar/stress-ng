@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	struct sched_param param = { 0 };
-
-	return sched_setscheduler(0, 0, &param);
+  struct sched_param param = { 0 };
+  return sched_setscheduler(0, 0, &param);
 }

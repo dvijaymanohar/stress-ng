@@ -31,12 +31,9 @@
 
 int main(void)
 {
-	int ret;
-	struct timespec times[2];
-
-	(void)memset(times, 0, sizeof(times));
-
-	ret = utimensat(0, "/tmp", times, 0);
-
-	return ret;
+  int ret;
+  struct timespec times[2];
+  (void)memset(times, 0, sizeof(times));
+  ret = utimensat(0, "/tmp", times, 0);
+  return ret;
 }

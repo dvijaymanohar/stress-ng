@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct v4l2_capability c;
-
-	(void)c;
-
-	return sizeof(c);
+  struct v4l2_capability c;
+  (void)c;
+  return sizeof(c);
 }

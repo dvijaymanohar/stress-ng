@@ -26,7 +26,6 @@
 
 int main(void)
 {
-	void *addr = (void*)~0;
-
-	return brk(addr);
+  void *addr = (void *)~0;
+  return brk(addr);
 }

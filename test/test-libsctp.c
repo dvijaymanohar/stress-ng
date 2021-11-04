@@ -28,20 +28,21 @@
 
 /* The following functions from libsctp are used by stress-ng */
 
-static void *sctp_funcs[] = {
-	(void *)sctp_sendmsg,
-	(void *)sctp_recvmsg,
+static void *sctp_funcs[] =
+{
+  (void *)sctp_sendmsg,
+  (void *)sctp_recvmsg,
 };
 
 #if !defined(SOL_SCTP)
-#error no SOL_SCTP
+  #error no SOL_SCTP
 #endif
 
 #if !defined(IPPROTO_SCTP)
-#error no IPPROTO_SCTP
+  #error no IPPROTO_SCTP
 #endif
 
 int main(void)
 {
-	return 0;
+  return 0;
 }

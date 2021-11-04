@@ -29,7 +29,6 @@ extern ssize_t llistxattr(const char *path, char *list, size_t size);
 
 int main(void)
 {
-	char list[1024];
-
-	return llistxattr("/some/path/to/somewhere", list, sizeof(list));
+  char list[1024];
+  return llistxattr("/some/path/to/somewhere", list, sizeof(list));
 }

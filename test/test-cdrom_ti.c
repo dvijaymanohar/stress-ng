@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct cdrom_ti ti;
-
-	(void)ti;
-
-	return sizeof(ti);
+  struct cdrom_ti ti;
+  (void)ti;
+  return sizeof(ti);
 }

@@ -23,17 +23,18 @@
  *
  */
 
-void test(char * __restrict ptr1, char * __restrict ptr2, int n)
+void test(char *__restrict ptr1, char *__restrict ptr2, int n)
 {
-	int i;
-
-	for (i = 0; *ptr1 && (i < n); i++)
-		*ptr1++ = *ptr2++;
+  int i;
+  
+  for (i = 0; *ptr1 && (i < n); i++)
+  {
+    *ptr1++ = *ptr2++;
+  }
 }
 
 int main(void)
 {
-	char buffer[1024];
-
-	test(buffer, "hello world", sizeof(buffer));
+  char buffer[1024];
+  test(buffer, "hello world", sizeof(buffer));
 }

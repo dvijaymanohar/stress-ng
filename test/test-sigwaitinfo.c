@@ -28,16 +28,14 @@
 #include <signal.h>
 
 #if defined(__gnu_hurd__)
-#error sigwaitinfo is defined but not implemented and will always fail
+  #error sigwaitinfo is defined but not implemented and will always fail
 #endif
 
 int main(void)
 {
-	sigset_t mask;
-	siginfo_t info;
-
-	(void)sigemptyset(&mask);
-	(void)sigaddset(&mask, SIGUSR1);
-
-	return sigwaitinfo(&mask, &info);
+  sigset_t mask;
+  siginfo_t info;
+  (void)sigemptyset(&mask);
+  (void)sigaddset(&mask, SIGUSR1);
+  return sigwaitinfo(&mask, &info);
 }

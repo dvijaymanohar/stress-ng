@@ -27,7 +27,6 @@
 
 int main(void)
 {
-	struct termios t;
-
-	return tcgetattr(0, &t);
+  struct termios t;
+  return tcgetattr(0, &t);
 }

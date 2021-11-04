@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return sched_getcpu();
+  return sched_getcpu();
 }

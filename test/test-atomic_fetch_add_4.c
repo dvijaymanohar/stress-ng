@@ -26,10 +26,8 @@
 
 int main(int argc, char **argv)
 {
-	uint32_t var;
-
-	__atomic_fetch_add_4(&var, 1, 0);
-
-	return 0;
+  uint32_t var;
+  __atomic_fetch_add_4(&var, 1, 0);
+  return 0;
 }
 

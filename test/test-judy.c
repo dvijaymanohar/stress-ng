@@ -29,18 +29,19 @@
 
 int main(void)
 {
-	Pvoid_t PJLArray = (Pvoid_t)NULL;
-	Word_t *pvalue;
-	Word_t idx = 0;
-	int rc;
-
-	JLI(pvalue, PJLArray, idx);
-	if (pvalue == PJERR) {
-		JLD(rc, PJLArray, idx);
-		return -1;
-	}
-	JLG(pvalue, PJLArray, idx);
-	JLD(rc, PJLArray, idx);
-
-	return 0;
+  Pvoid_t PJLArray = (Pvoid_t)NULL;
+  Word_t *pvalue;
+  Word_t idx = 0;
+  int rc;
+  JLI(pvalue, PJLArray, idx);
+  
+  if (pvalue == PJERR)
+  {
+    JLD(rc, PJLArray, idx);
+    return -1;
+  }
+  
+  JLG(pvalue, PJLArray, idx);
+  JLD(rc, PJLArray, idx);
+  return 0;
 }

@@ -24,129 +24,154 @@
  */
 #include "stress-ng.h"
 
-static const stress_help_t help[] = {
-	{ NULL,	"crypt N",	"start N workers performing password encryption" },
-	{ NULL,	"crypt-ops N",	"stop after N bogo crypt operations" },
-	{ NULL,	NULL,		NULL }
+static const stress_help_t help[] =
+{
+  { NULL, "crypt N",  "start N workers performing password encryption" },
+  { NULL, "crypt-ops N",  "stop after N bogo crypt operations" },
+  { NULL, NULL,   NULL }
 };
 
-#if defined(HAVE_LIB_CRYPT) &&	\
+#if defined(HAVE_LIB_CRYPT) &&  \
     defined(HAVE_CRYPT_H)
 
-typedef struct {
-	const char id;
-	const char *method;
+typedef struct
+{
+  const char id;
+  const char *method;
 } crypt_method_t;
 
-static const crypt_method_t crypt_methods[] = {
-	{ '1', "MD5" },
-	{ '5', "SHA-256" },
-	{ '6', "SHA-512" },
-	{ '7', "scrypt" },
-	{ '3', "NT" },
-	{ 'y', "yescrypt" },
+static const crypt_method_t crypt_methods[] =
+{
+  { '1', "MD5" },
+  { '5', "SHA-256" },
+  { '6', "SHA-512" },
+  { '7', "scrypt" },
+  { '3', "NT" },
+  { 'y', "yescrypt" },
 };
 
 /*
  *  stress_crypt_id()
- *	crypt a password with given seed and id
+ *  crypt a password with given seed and id
  */
 static int stress_crypt_id(
-	const stress_args_t *args,
-	const char id,
-	const char *method,
-	const char *passwd,
-	char *salt)
+  const stress_args_t *args,
+  const char id,
+  const char *method,
+  const char *passwd,
+  char *salt)
 {
-	salt[1] = id;
-	char *encrypted;
+  salt[1] = id;
+  char *encrypted;
 #if defined (HAVE_CRYPT_R)
-	static struct crypt_data data;
-
-	(void)memset(&data, 0, sizeof(data));
-	errno = 0;
-	encrypted = crypt_r(passwd, salt, &data);
+  static struct crypt_data data;
+  (void)memset(&data, 0, sizeof(data));
+  errno = 0;
+  encrypted = crypt_r(passwd, salt, &data);
 #else
-	encrypted = crypt(passwd, salt);
+  encrypted = crypt(passwd, salt);
 #endif
-	if (!encrypted) {
-		switch (errno) {
-		case 0:
-			break;
-		case EINVAL:
-			break;
+  
+  if (!encrypted)
+  {
+    switch (errno)
+    {
+      case 0:
+        break;
+        
+      case EINVAL:
+        break;
 #if defined(ENOSYS)
-		case ENOSYS:
-			break;
+        
+      case ENOSYS:
+        break;
 #endif
 #if defined(EOPNOTSUPP)
-		case EOPNOTSUPP:
+        
+      case EOPNOTSUPP:
 #endif
-			break;
-		default:
-			pr_fail("%s: cannot encrypt with %s, errno=%d (%s)\n",
-				args->name, method, errno, strerror(errno));
-			return -1;
-		}
-	}
-	return 0;
+        break;
+        
+      default:
+        pr_fail("%s: cannot encrypt with %s, errno=%d (%s)\n",
+                args->name, method, errno, strerror(errno));
+        return -1;
+    }
+  }
+  
+  return 0;
 }
 
 /*
  *  stress_crypt()
- *	stress libc crypt
+ *  stress libc crypt
  */
 static int stress_crypt(const stress_args_t *args)
 {
-	stress_set_proc_state(args->name, STRESS_STATE_RUN);
-
-	do {
-		static const char seedchars[] =
-			"./0123456789ABCDEFGHIJKLMNOPQRST"
-			"UVWXYZabcdefghijklmnopqrstuvwxyz";
-		char passwd[16];
-		char salt[] = "$x$........";
-		uint64_t seed[2];
-		size_t i, failed = 0;
-
-		seed[0] = stress_mwc64();
-		seed[1] = stress_mwc64();
-
-		for (i = 0; i < 8; i++)
-			salt[i + 3] = seedchars[(seed[i / 5] >> (i % 5) * 6) & 0x3f];
-		for (i = 0; i < sizeof(passwd) - 1; i++)
-			passwd[i] = seedchars[stress_mwc32() % sizeof(seedchars)];
-		passwd[i] = '\0';
-
-		for (i = 0; i < SIZEOF_ARRAY(crypt_methods); i++) {
-			int ret;
-
-			ret = stress_crypt_id(args,
-					      crypt_methods[i].id,
-					      crypt_methods[i].method,
-					      passwd, salt);
-			if (ret < 0)
-				failed++;
-		}
-		if (failed)
-			break;
-		inc_counter(args);
-	} while (keep_stressing(args));
-
-	stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
-
-	return EXIT_SUCCESS;
+  stress_set_proc_state(args->name, STRESS_STATE_RUN);
+  
+  do
+  {
+    static const char seedchars[] =
+      "./0123456789ABCDEFGHIJKLMNOPQRST"
+      "UVWXYZabcdefghijklmnopqrstuvwxyz";
+    char passwd[16];
+    char salt[] = "$x$........";
+    uint64_t seed[2];
+    size_t i, failed = 0;
+    seed[0] = stress_mwc64();
+    seed[1] = stress_mwc64();
+    
+    for (i = 0; i < 8; i++)
+    {
+      salt[i + 3] = seedchars[(seed[i / 5] >> (i % 5) * 6) & 0x3f];
+    }
+    
+    for (i = 0; i < sizeof(passwd) - 1; i++)
+    {
+      passwd[i] = seedchars[stress_mwc32() % sizeof(seedchars)];
+    }
+    
+    passwd[i] = '\0';
+    
+    for (i = 0; i < SIZEOF_ARRAY(crypt_methods); i++)
+    {
+      int ret;
+      ret = stress_crypt_id(args,
+                            crypt_methods[i].id,
+                            crypt_methods[i].method,
+                            passwd, salt);
+                            
+      if (ret < 0)
+      {
+        failed++;
+      }
+    }
+    
+    if (failed)
+    {
+      break;
+    }
+    
+    inc_counter(args);
+  }
+  while (keep_stressing(args));
+  
+  stress_set_proc_state(args->name, STRESS_STATE_DEINIT);
+  return EXIT_SUCCESS;
 }
 
-stressor_info_t stress_crypt_info = {
-	.stressor = stress_crypt,
-	.class = CLASS_CPU,
-	.help = help
+stressor_info_t stress_crypt_info =
+{
+  .stressor = stress_crypt,
+  .class = CLASS_CPU,
+  .help = help
 };
 #else
-stressor_info_t stress_crypt_info = {
-	.stressor = stress_not_implemented,
-	.class = CLASS_CPU,
-	.help = help
+stressor_info_t stress_crypt_info =
+{
+  .stressor = stress_not_implemented,
+  .class = CLASS_CPU,
+  .help = help
 };
 #endif

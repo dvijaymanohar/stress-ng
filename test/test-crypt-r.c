@@ -30,12 +30,10 @@
 
 int main(void)
 {
-	char *ptr;
-	const char *key = "keystring";
-	const char *salt = "saltstring";
-	static struct crypt_data data;
-
-	ptr = crypt_r(key, salt, &data);
-
-	return ptr != (void *)0;
+  char *ptr;
+  const char *key = "keystring";
+  const char *salt = "saltstring";
+  static struct crypt_data data;
+  ptr = crypt_r(key, salt, &data);
+  return ptr != (void *)0;
 }

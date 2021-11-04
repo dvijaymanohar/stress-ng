@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct mtrr_gentry m;
-
-	(void)m;
-
-	return sizeof(m);
+  struct mtrr_gentry m;
+  (void)m;
+  return sizeof(m);
 }

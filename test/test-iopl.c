@@ -28,5 +28,5 @@
 
 int main(void)
 {
-	return iopl(0);
+  return iopl(0);
 }

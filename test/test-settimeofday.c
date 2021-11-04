@@ -28,10 +28,7 @@
 
 int main(void)
 {
-	struct timeval tv;
-
-	(void)memset(&tv, 0, sizeof(tv));
-
-	return settimeofday(&tv, NULL);
-
+  struct timeval tv;
+  (void)memset(&tv, 0, sizeof(tv));
+  return settimeofday(&tv, NULL);
 }

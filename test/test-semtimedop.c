@@ -30,10 +30,9 @@
 
 int main(void)
 {
-	int semid = 0;
-	struct sembuf ops = { 0 };
-	size_t nsops = 1;
-	struct timespec timeout = { 0 };
-
-	return semtimedop(semid, &ops, nsops, &timeout);
+  int semid = 0;
+  struct sembuf ops = { 0 };
+  size_t nsops = 1;
+  struct timespec timeout = { 0 };
+  return semtimedop(semid, &ops, nsops, &timeout);
 }

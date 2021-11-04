@@ -26,14 +26,12 @@
 
 int main(void)
 {
-	int ret;
-
-	ret = flock(1, LOCK_EX);
-	(void)ret;
-	ret = flock(1, LOCK_UN);
-	(void)ret;
-	ret = flock(1, LOCK_SH);
-	(void)ret;
-
-	return 0;
+  int ret;
+  ret = flock(1, LOCK_EX);
+  (void)ret;
+  ret = flock(1, LOCK_UN);
+  (void)ret;
+  ret = flock(1, LOCK_SH);
+  (void)ret;
+  return 0;
 }

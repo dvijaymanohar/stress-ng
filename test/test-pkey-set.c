@@ -31,5 +31,5 @@
 
 int main(void)
 {
-	return pkey_set(0, 0);
+  return pkey_set(0, 0);
 }

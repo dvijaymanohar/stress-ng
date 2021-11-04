@@ -29,8 +29,7 @@
 
 int main(void)
 {
-	struct timespec ts;
-	pid_t pid = 0;
-
-	return sched_rr_get_interval(pid, &ts);
+  struct timespec ts;
+  pid_t pid = 0;
+  return sched_rr_get_interval(pid, &ts);
 }

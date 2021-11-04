@@ -26,5 +26,5 @@
 
 int main(void)
 {
-	return vhangup();
+  return vhangup();
 }

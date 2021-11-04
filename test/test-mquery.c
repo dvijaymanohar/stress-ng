@@ -27,5 +27,5 @@
 
 int main(void)
 {
-	return mquery(NULL, 4096, PROT_READ, MAP_FIXED, -1, 0);
+  return mquery(NULL, 4096, PROT_READ, MAP_FIXED, -1, 0);
 }

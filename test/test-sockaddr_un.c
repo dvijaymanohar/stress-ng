@@ -27,9 +27,7 @@
 
 int main(void)
 {
-	struct sockaddr_un addr;
-
-	(void)addr;
-
-	return sizeof(addr);
+  struct sockaddr_un addr;
+  (void)addr;
+  return sizeof(addr);
 }

@@ -28,9 +28,7 @@
 
 int main(void)
 {
-	struct timeval delta, tv;
-
-	(void)memset(&delta, 0, sizeof(delta));
-
-	return adjtime(&delta, &tv);
+  struct timeval delta, tv;
+  (void)memset(&delta, 0, sizeof(delta));
+  return adjtime(&delta, &tv);
 }

@@ -30,10 +30,9 @@
 int main(void)
 {
 #if defined(__NetBSD__)
-        struct statvfs *statbufs;
+  struct statvfs *statbufs;
 #else
-        struct statfs *statbufs;
+  struct statfs *statbufs;
 #endif
-
-	return getmntinfo(&statbufs, 0);
+  return getmntinfo(&statbufs, 0);
 }

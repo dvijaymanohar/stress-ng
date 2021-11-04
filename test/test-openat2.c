@@ -33,11 +33,9 @@
 
 int main(void)
 {
-	struct open_how how;
-
-	how.flags = O_RDWR;
-	how.mode = O_CREAT;
-	how.resolve = RESOLVE_NO_SYMLINKS;
-
-	return syscall(__NR_openat2, AT_FDCWD, "test", &how, sizeof(how));
+  struct open_how how;
+  how.flags = O_RDWR;
+  how.mode = O_CREAT;
+  how.resolve = RESOLVE_NO_SYMLINKS;
+  return syscall(__NR_openat2, AT_FDCWD, "test", &how, sizeof(how));
 }

@@ -30,10 +30,9 @@
 
 int main(void)
 {
-	int dirfd = 0;
-	struct file_handle handle;
-	int mount_id = 0;
-	int flags = 0;
-
-	return name_to_handle_at(dirfd, "/some/path/name", &handle, &mount_id, flags);
+  int dirfd = 0;
+  struct file_handle handle;
+  int mount_id = 0;
+  int flags = 0;
+  return name_to_handle_at(dirfd, "/some/path/name", &handle, &mount_id, flags);
 }

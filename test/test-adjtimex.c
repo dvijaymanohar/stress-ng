@@ -27,8 +27,7 @@
 
 int main(void)
 {
-	struct timex buf;
-
-	buf.modes = 0;
-	return adjtimex(&buf);
+  struct timex buf;
+  buf.modes = 0;
+  return adjtimex(&buf);
 }

@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct vt_stat s;
-
-	(void)s;
-
-	return sizeof(s);
+  struct vt_stat s;
+  (void)s;
+  return sizeof(s);
 }

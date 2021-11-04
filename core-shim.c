@@ -32,641 +32,680 @@
 
 /*
  *  shim_enosys()
- *	simulate unimplemented system call. Ignores
- *	the sysnr argument and all following 1..N syscall
- *	arguments.  Returns -1 and sets errno to ENOSYS
+ *  simulate unimplemented system call. Ignores
+ *  the sysnr argument and all following 1..N syscall
+ *  arguments.  Returns -1 and sets errno to ENOSYS
  */
 static inline long shim_enosys(long sysnr, ...)
 {
-	(void)sysnr;
-	errno = ENOSYS;
-	return (long)-1;
+  (void)sysnr;
+  errno = ENOSYS;
+  return (long) -1;
 }
 
 /*
  *  shim_sched_yield()
- *  	wrapper for sched_yield(2) - yield the processor
+ *    wrapper for sched_yield(2) - yield the processor
  */
 int shim_sched_yield(void)
 {
 #if defined(HAVE_SCHED_YIELD)
-	return sched_yield();
+  return sched_yield();
 #elif defined(__NR_sched_yield)
-	return syscall(__NR_sched_yield);
+  return syscall(__NR_sched_yield);
 #else
-	return sleep(0);
+  return sleep(0);
 #endif
 }
 
 /*
  *  shim_cacheflush()
- *	wrapper for cacheflush(2), flush contents of
- *	instruction and/or data cache
+ *  wrapper for cacheflush(2), flush contents of
+ *  instruction and/or data cache
  */
 int shim_cacheflush(char *addr, int nbytes, int cache)
 {
 #if defined(__NR_cacheflush)
-	return (int)syscall(__NR_cacheflush, addr, nbytes, cache);
+  return (int)syscall(__NR_cacheflush, addr, nbytes, cache);
 #else
-	return (int)shim_enosys(0, addr, nbytes, cache);
+  return (int)shim_enosys(0, addr, nbytes, cache);
 #endif
 }
 
 /*
  * shim_copy_file_range()
- *	wrapper for copy_file_range(2), copy range of data
- *	from one file to another
+ *  wrapper for copy_file_range(2), copy range of data
+ *  from one file to another
  */
 ssize_t shim_copy_file_range(
-	int fd_in,
-	shim_loff_t *off_in,
-	int fd_out,
-	shim_loff_t *off_out,
-	size_t len,
-	unsigned int flags)
+  int fd_in,
+  shim_loff_t *off_in,
+  int fd_out,
+  shim_loff_t *off_out,
+  size_t len,
+  unsigned int flags)
 {
 #if defined(HAVE_COPY_FILE_RANGE)
-	return copy_file_range(fd_in, off_in, fd_out, off_out, len, flags);
+  return copy_file_range(fd_in, off_in, fd_out, off_out, len, flags);
 #elif defined(__NR_copy_file_range)
-	return (ssize_t)syscall(__NR_copy_file_range,
-		fd_in, off_in, fd_out, off_out, len, flags);
+  return (ssize_t)syscall(__NR_copy_file_range,
+                          fd_in, off_in, fd_out, off_out, len, flags);
 #else
-	return (ssize_t)shim_enosys(0, fd_in, off_in, fd_out, off_out, len, flags);
+  return (ssize_t)shim_enosys(0, fd_in, off_in, fd_out, off_out, len, flags);
 #endif
 }
 
 /*
  * shim_emulate_fallocate()
- *	emulate fallocate (very slow!)
+ *  emulate fallocate (very slow!)
  */
 static int shim_emulate_fallocate(int fd, off_t offset, off_t len)
 {
-	const off_t buf_sz = 8192;
-	char buffer[buf_sz];
-	off_t n;
-
-	n = lseek(fd, offset, SEEK_SET);
-	if (n == (off_t)-1)
-		return -1;
-
-	(void)memset(buffer, 0, buf_sz);
-	n = len;
-
-	while (keep_stressing_flag() && (n > 0)) {
-		ssize_t ret;
-		size_t count = (size_t)STRESS_MINIMUM(n, buf_sz);
-
-		ret = write(fd, buffer, count);
-		if (ret >= 0) {
-			n -= ret;
-		} else {
-			return -1;
-		}
-	}
-	return 0;
+  const off_t buf_sz = 8192;
+  char buffer[buf_sz];
+  off_t n;
+  n = lseek(fd, offset, SEEK_SET);
+  
+  if (n == (off_t) -1)
+  {
+    return -1;
+  }
+  
+  (void)memset(buffer, 0, buf_sz);
+  n = len;
+  
+  while (keep_stressing_flag() && (n > 0))
+  {
+    ssize_t ret;
+    size_t count = (size_t)STRESS_MINIMUM(n, buf_sz);
+    ret = write(fd, buffer, count);
+    
+    if (ret >= 0)
+    {
+      n -= ret;
+    }
+    else
+    {
+      return -1;
+    }
+  }
+  
+  return 0;
 }
 
 /*
  * shim_fallocate()
- *	shim wrapper for fallocate system call
- *	- falls back to posix_fallocate w/o mode
- * 	- falls back to direct writes
+ *  shim wrapper for fallocate system call
+ *  - falls back to posix_fallocate w/o mode
+ *  - falls back to direct writes
  */
 int shim_fallocate(int fd, int mode, off_t offset, off_t len)
 {
 #if defined(HAVE_FALLOCATE)
-	int ret;
-
-	ret = fallocate(fd, mode, offset, len);
-	/* mode not supported? try with zero mode (dirty hack) */
-	if ((ret < 0) && (errno == EOPNOTSUPP)) {
-		ret = (int)syscall(__NR_fallocate, fd, 0, offset, len);
-		/* fallocate failed, try emulation mode */
-		if ((ret < 0) && (errno == EOPNOTSUPP)) {
-			ret = shim_emulate_fallocate(fd, offset, len);
-		}
-	}
-	return ret;
+  int ret;
+  ret = fallocate(fd, mode, offset, len);
+  
+  /* mode not supported? try with zero mode (dirty hack) */
+  if ((ret < 0) && (errno == EOPNOTSUPP))
+  {
+    ret = (int)syscall(__NR_fallocate, fd, 0, offset, len);
+    
+    /* fallocate failed, try emulation mode */
+    if ((ret < 0) && (errno == EOPNOTSUPP))
+    {
+      ret = shim_emulate_fallocate(fd, offset, len);
+    }
+  }
+  
+  return ret;
 #elif defined(__NR_fallocate)
-	int ret;
-
-	ret = syscall(__NR_fallocate, fd, mode, offset, len);
-	/* mode not supported? try with zero mode (dirty hack) */
-	if ((ret < 0) && (errno == EOPNOTSUPP)) {
-		ret = syscall(__NR_fallocate, fd, 0, offset, len);
-		/* fallocate failed, try emulation mode */
-		if ((ret < 0) && (errno == EOPNOTSUPP)) {
-			ret = shim_emulate_fallocate(fd, offset, len);
-		}
-	}
-	return ret;
-#elif defined(HAVE_POSIX_FALLOCATE) &&	\
+  int ret;
+  ret = syscall(__NR_fallocate, fd, mode, offset, len);
+  
+  /* mode not supported? try with zero mode (dirty hack) */
+  if ((ret < 0) && (errno == EOPNOTSUPP))
+  {
+    ret = syscall(__NR_fallocate, fd, 0, offset, len);
+  
+    /* fallocate failed, try emulation mode */
+    if ((ret < 0) && (errno == EOPNOTSUPP))
+    {
+      ret = shim_emulate_fallocate(fd, offset, len);
+    }
+  }
+  
+  return ret;
+#elif defined(HAVE_POSIX_FALLOCATE) &&  \
       !defined(__FreeBSD_kernel__)
-	/*
-	 *  Even though FreeBSD kernels support this, large
-	 *  allocations take forever to be interrupted and so
-	 *  we don't use this for FreeBSD for now.
-	 */
-	int ret;
-
-	(void)mode;
-
-	/*
-	 *  posix_fallocate returns 0 for success, > 0 as errno
-	 */
-	ret = posix_fallocate(fd, offset, len);
-	errno = 0;
-	if (ret != 0) {
-		/* failed, so retry with slower emulated fallocate */
-		ret = shim_emulate_fallocate(fd, offset, len);
-	}
-	return ret;
+  /*
+   *  Even though FreeBSD kernels support this, large
+   *  allocations take forever to be interrupted and so
+   *  we don't use this for FreeBSD for now.
+   */
+  int ret;
+  (void)mode;
+  /*
+   *  posix_fallocate returns 0 for success, > 0 as errno
+   */
+  ret = posix_fallocate(fd, offset, len);
+  errno = 0;
+  
+  if (ret != 0)
+  {
+    /* failed, so retry with slower emulated fallocate */
+    ret = shim_emulate_fallocate(fd, offset, len);
+  }
+  
+  return ret;
 #else
-	(void)mode;
-
-	return shim_emulate_fallocate(fd, offset, len);
+  (void)mode;
+  return shim_emulate_fallocate(fd, offset, len);
 #endif
 }
 
 /*
  *  shim_gettid()
- *	wrapper for gettid(2), get thread identification
+ *  wrapper for gettid(2), get thread identification
  */
 int shim_gettid(void)
 {
 #if defined(__NR_gettid)
-	return (int)syscall(__NR_gettid);
+  return (int)syscall(__NR_gettid);
 #else
-	return (int)shim_enosys(0);
+  return (int)shim_enosys(0);
 #endif
 }
 
 /*
  *  shim_getcpu()
- *	wrapper for getcpu(2) - get CPU and NUMA node of
- *	calling thread
+ *  wrapper for getcpu(2) - get CPU and NUMA node of
+ *  calling thread
  */
 long shim_getcpu(
-	unsigned *cpu,
-	unsigned *node,
-	void *tcache)
+  unsigned *cpu,
+  unsigned *node,
+  void *tcache)
 {
 #if defined(__NR_getcpu)
-	return (long)syscall(__NR_getcpu, cpu, node, tcache);
+  return (long)syscall(__NR_getcpu, cpu, node, tcache);
 #else
-	return (long)shim_enosys(0, cpu, node, tcache);
+  return (long)shim_enosys(0, cpu, node, tcache);
 #endif
 }
 
 /*
  *  shim_getdents()
- *	wrapper for getdents(2) - get directory entries
+ *  wrapper for getdents(2) - get directory entries
  */
 int shim_getdents(
-	unsigned int fd,
-	struct shim_linux_dirent *dirp,
-	unsigned int count)
+  unsigned int fd,
+  struct shim_linux_dirent *dirp,
+  unsigned int count)
 {
 #if defined(__NR_getdents)
-	return (int)syscall(__NR_getdents, fd, dirp, count);
+  return (int)syscall(__NR_getdents, fd, dirp, count);
 #else
-	return (int)shim_enosys(0, fd, dirp, count);
+  return (int)shim_enosys(0, fd, dirp, count);
 #endif
 }
 
 /*
  *  shim_getdent64()
- *	wrapper for getdents64(2) - get directory entries
+ *  wrapper for getdents64(2) - get directory entries
  */
 int shim_getdents64(
-	unsigned int fd,
-	struct shim_linux_dirent64 *dirp,
-	unsigned int count)
+  unsigned int fd,
+  struct shim_linux_dirent64 *dirp,
+  unsigned int count)
 {
 #if defined(__NR_getdents64)
-	return (int)syscall(__NR_getdents64, fd, dirp, count);
+  return (int)syscall(__NR_getdents64, fd, dirp, count);
 #else
-	return (int)shim_enosys(0, fd, dirp, count);
+  return (int)shim_enosys(0, fd, dirp, count);
 #endif
 }
 
 /*
  *  shim_getrandom()
- *	wrapper for Linux getrandom(2) and BSD getentropy(2)
+ *  wrapper for Linux getrandom(2) and BSD getentropy(2)
  */
 int shim_getrandom(void *buff, size_t buflen, unsigned int flags)
 {
 #if defined(__NR_getrandom)
-	return (int)syscall(__NR_getrandom, buff, buflen, flags);
+  return (int)syscall(__NR_getrandom, buff, buflen, flags);
 #elif defined(__OpenBSD__) || defined(__APPLE__)
-	(void)flags;
-
-	return getentropy(buff, buflen);
+  (void)flags;
+  return getentropy(buff, buflen);
 #else
-	return (int)shim_enosys(0, buff, buflen, flags);
+  return (int)shim_enosys(0, buff, buflen, flags);
 #endif
 }
 
 /*
  *  shim_flush_icache()
- *	wrapper for RISC-V icache flush and ARM __clear_cache gcc intrinsic
+ *  wrapper for RISC-V icache flush and ARM __clear_cache gcc intrinsic
  */
 void shim_flush_icache(void *begin, void *end)
 {
-#if defined(__GNUC__) &&	\
+#if defined(__GNUC__) &&  \
     defined(STRESS_ARCH_ARM)
-	__clear_cache(begin, end);
-#elif defined(STRESS_ARCH_RISC_V) &&	\
+  __clear_cache(begin, end);
+#elif defined(STRESS_ARCH_RISC_V) &&  \
       defined(__NR_riscv_flush_icache)
-	(void)syscall(__NR_riscv_flush_icache, begin, end, 0);
+  (void)syscall(__NR_riscv_flush_icache, begin, end, 0);
 #else
-	(void)shim_enosys(0, begin, end);
+  (void)shim_enosys(0, begin, end);
 #endif
 }
 
 /*
  *  shim_kcmp()
- *	wrapper for Linux kcmp(2) - compare two processes to
- *	see if they share a kernel resource.
+ *  wrapper for Linux kcmp(2) - compare two processes to
+ *  see if they share a kernel resource.
  */
 long shim_kcmp(pid_t pid1, pid_t pid2, int type, unsigned long idx1, unsigned long idx2)
 {
 #if defined(__NR_kcmp)
-	errno = 0;
-	return (long)syscall(__NR_kcmp, pid1, pid2, type, idx1, idx2);
+  errno = 0;
+  return (long)syscall(__NR_kcmp, pid1, pid2, type, idx1, idx2);
 #else
-	return (long)shim_enosys(0, pid1, pid2, type, idx1, idx2);
+  return (long)shim_enosys(0, pid1, pid2, type, idx1, idx2);
 #endif
 }
 
 /*
  *  shim_klogctl()
- *	wrapper for syslog(2) (NOT syslog(3))
+ *  wrapper for syslog(2) (NOT syslog(3))
  */
 int shim_klogctl(int type, char *bufp, int len)
 {
 #if defined(__NR_syslog)
-	return (int)syscall(__NR_syslog, type, bufp, len);
+  return (int)syscall(__NR_syslog, type, bufp, len);
 #else
-	return (int)shim_enosys(0, type, bufp, len);
+  return (int)shim_enosys(0, type, bufp, len);
 #endif
 }
 
 /*
  *  shim_membarrier()
- *	wrapper for membarrier(2) - issue memory barriers
+ *  wrapper for membarrier(2) - issue memory barriers
  */
 int shim_membarrier(int cmd, int flags, int cpu_id)
 {
 #if defined(__NR_membarrier)
-	return (int)syscall(__NR_membarrier, cmd, flags, cpu_id);
+  return (int)syscall(__NR_membarrier, cmd, flags, cpu_id);
 #else
-	return (int)shim_enosys(0, cmd, flags, cpu_id);
+  return (int)shim_enosys(0, cmd, flags, cpu_id);
 #endif
 }
 
 /*
  *  shim_memfd_create()
- *	wrapper for memfd_create(2)
+ *  wrapper for memfd_create(2)
  */
 int shim_memfd_create(const char *name, unsigned int flags)
 {
 #if defined(__NR_memfd_create)
-	return (int)syscall(__NR_memfd_create, name, flags);
+  return (int)syscall(__NR_memfd_create, name, flags);
 #else
-	return (int)shim_enosys(0, name, flags);
+  return (int)shim_enosys(0, name, flags);
 #endif
 }
 
 /*
  *  shim_get_mempolicy()
- *	wrapper for get_mempolicy(2) - get NUMA memory policy
+ *  wrapper for get_mempolicy(2) - get NUMA memory policy
  */
 int shim_get_mempolicy(
-	int *mode,
-	unsigned long *nodemask,
-	unsigned long maxnode,
-	void *addr,
-	unsigned long flags)
+  int *mode,
+  unsigned long *nodemask,
+  unsigned long maxnode,
+  void *addr,
+  unsigned long flags)
 {
 #if defined(__NR_get_mempolicy)
-	return (int)syscall(__NR_get_mempolicy,
-		mode, nodemask, maxnode, addr, flags);
+  return (int)syscall(__NR_get_mempolicy,
+                      mode, nodemask, maxnode, addr, flags);
 #else
-	return (int)shim_enosys(0, mode, nodemask, maxnode, addr, flags);
+  return (int)shim_enosys(0, mode, nodemask, maxnode, addr, flags);
 #endif
 }
 
 /*
  *  shim_set_mempolicy()
- *	wrapper for set_mempolicy(2) - set NUMA memory policy
+ *  wrapper for set_mempolicy(2) - set NUMA memory policy
  */
 int shim_set_mempolicy(
-	int mode,
-	unsigned long *nodemask,
-	unsigned long maxnode)
+  int mode,
+  unsigned long *nodemask,
+  unsigned long maxnode)
 {
 #if defined(__NR_set_mempolicy)
-	return (int)syscall(__NR_set_mempolicy,
-		mode, nodemask, maxnode);
+  return (int)syscall(__NR_set_mempolicy,
+                      mode, nodemask, maxnode);
 #else
-	return (int)shim_enosys(0, mode, nodemask, maxnode);
+  return (int)shim_enosys(0, mode, nodemask, maxnode);
 #endif
 }
 
 /*
  *  shim_mbind()
- *	wrapper for mbind(2) - set memory policy for a memory range
+ *  wrapper for mbind(2) - set memory policy for a memory range
  */
 long shim_mbind(
-	void *addr,
-	unsigned long len,
-	int mode,
-	const unsigned long *nodemask,
-	unsigned long maxnode,
-	unsigned flags)
+  void *addr,
+  unsigned long len,
+  int mode,
+  const unsigned long *nodemask,
+  unsigned long maxnode,
+  unsigned flags)
 {
 #if defined(__NR_mbind)
-	return (long)syscall(__NR_mbind,
-		addr, len, mode, nodemask, maxnode, flags);
+  return (long)syscall(__NR_mbind,
+                       addr, len, mode, nodemask, maxnode, flags);
 #else
-	return (long)shim_enosys(0, addr, len, mode, nodemask, maxnode, flags);
+  return (long)shim_enosys(0, addr, len, mode, nodemask, maxnode, flags);
 #endif
 }
 
 /*
  *  shim_migrate_pages()
- *	wrapper for migrate_pages(2) - move all pages in a process to other nodes
+ *  wrapper for migrate_pages(2) - move all pages in a process to other nodes
  */
 long shim_migrate_pages(
-	int pid,
-	unsigned long maxnode,
-	const unsigned long *old_nodes,
-	const unsigned long *new_nodes)
+  int pid,
+  unsigned long maxnode,
+  const unsigned long *old_nodes,
+  const unsigned long *new_nodes)
 {
 #if defined(__NR_migrate_pages)
-	return (long)syscall(__NR_migrate_pages,
-		pid, maxnode, old_nodes, new_nodes);
+  return (long)syscall(__NR_migrate_pages,
+                       pid, maxnode, old_nodes, new_nodes);
 #else
-	return (long)shim_enosys(0, pid, maxnode, old_nodes, new_nodes);
+  return (long)shim_enosys(0, pid, maxnode, old_nodes, new_nodes);
 #endif
 }
 
 /*
  *  shim_move_pages()
- *	wrapper for move_pages(2) - move pages in a process to other nodes
+ *  wrapper for move_pages(2) - move pages in a process to other nodes
  */
 long shim_move_pages(
-	int pid,
-	unsigned long count,
-	void **pages,
-	const int *nodes,
-	int *status,
-	int flags)
+  int pid,
+  unsigned long count,
+  void **pages,
+  const int *nodes,
+  int *status,
+  int flags)
 {
 #if defined(__NR_move_pages)
-	return (long)syscall(__NR_move_pages, pid, count, pages, nodes,
-		status, flags);
+  return (long)syscall(__NR_move_pages, pid, count, pages, nodes,
+                       status, flags);
 #else
-	return (long)shim_enosys(0, pid, count, pages, nodes, status, flags);
+  return (long)shim_enosys(0, pid, count, pages, nodes, status, flags);
 #endif
 }
 
 /*
  *  shim_userfaultfd()
- *	wrapper for userfaultfd(2)
+ *  wrapper for userfaultfd(2)
  */
 int shim_userfaultfd(int flags)
 {
 #if defined(__NR_userfaultfd)
-	return (int)syscall(__NR_userfaultfd, flags);
+  return (int)syscall(__NR_userfaultfd, flags);
 #else
-	return (int)shim_enosys(0, flags);
+  return (int)shim_enosys(0, flags);
 #endif
 }
 
 /*
  *  shim_seccomp()
- *	wrapper for seccomp(2) - operate on Secure Computing state of process
+ *  wrapper for seccomp(2) - operate on Secure Computing state of process
  */
 int shim_seccomp(unsigned int operation, unsigned int flags, void *args)
 {
 #if defined(__NR_seccomp)
-	return (int)syscall(__NR_seccomp, operation, flags, args);
+  return (int)syscall(__NR_seccomp, operation, flags, args);
 #else
-	return (int)shim_enosys(0, operation, flags, args);
+  return (int)shim_enosys(0, operation, flags, args);
 #endif
 }
 
 /*
  *  shim_unshare()
- *	wrapper for unshare(2)
+ *  wrapper for unshare(2)
  */
 int shim_unshare(int flags)
 {
 #if defined(__NR_unshare)
 #if NEED_GLIBC(2,14,0)
-	return unshare(flags);
+  return unshare(flags);
 #else
-	return (int)syscall(__NR_unshare, flags);
+  return (int)syscall(__NR_unshare, flags);
 #endif
 #else
-	return (int)shim_enosys(0, flags);
+  return (int)shim_enosys(0, flags);
 #endif
 }
 
 /*
  *  shim_shed_getattr()
- *	wrapper for shed_getattr(2)
+ *  wrapper for shed_getattr(2)
  */
 int shim_sched_getattr(
-	pid_t pid,
-	struct shim_sched_attr *attr,
-	unsigned int size,
-	unsigned int flags)
+  pid_t pid,
+  struct shim_sched_attr *attr,
+  unsigned int size,
+  unsigned int flags)
 {
 #if defined(__NR_sched_getattr)
-	return (int)syscall(__NR_sched_getattr, pid, attr, size, flags);
+  return (int)syscall(__NR_sched_getattr, pid, attr, size, flags);
 #else
-	return (int)shim_enosys(0, pid, attr, size, flags);
+  return (int)shim_enosys(0, pid, attr, size, flags);
 #endif
 }
 
 /*
  *  shim_shed_setattr()
- *	wrapper for shed_setattr(2)
+ *  wrapper for shed_setattr(2)
  */
 int shim_sched_setattr(
-	pid_t pid,
-	struct shim_sched_attr *attr,
-	unsigned int flags)
+  pid_t pid,
+  struct shim_sched_attr *attr,
+  unsigned int flags)
 {
 #if defined(__NR_sched_setattr)
-	return (int)syscall(__NR_sched_setattr, pid, attr, flags);
+  return (int)syscall(__NR_sched_setattr, pid, attr, flags);
 #else
-	return (int)shim_enosys(0, pid, attr, flags);
+  return (int)shim_enosys(0, pid, attr, flags);
 #endif
 }
 
 /*
  *  shim_mlock()
- *	wrapper for mlock(2) - lock memory
+ *  wrapper for mlock(2) - lock memory
  */
 int shim_mlock(const void *addr, size_t len)
 {
 #if defined(HAVE_MLOCK)
-	return mlock(shim_unconstify_ptr(addr), len);
+  return mlock(shim_unconstify_ptr(addr), len);
 #elif defined(__NR_mlock)
-	return (int)syscall(__NR_mlock, addr, len);
+  return (int)syscall(__NR_mlock, addr, len);
 #else
-	return (int)shim_enosys(0, addr, len);
+  return (int)shim_enosys(0, addr, len);
 #endif
 }
 
 /*
  *  shim_munlock()
- *	wrapper for munlock(2) - unlock memory
+ *  wrapper for munlock(2) - unlock memory
  */
 int shim_munlock(const void *addr, size_t len)
 {
 #if defined(HAVE_MUNLOCK)
-	return munlock(shim_unconstify_ptr(addr), len);
+  return munlock(shim_unconstify_ptr(addr), len);
 #elif defined(__NR_munlock)
-	return (int)syscall(__NR_munlock, addr, len);
+  return (int)syscall(__NR_munlock, addr, len);
 #else
-	return (int)shim_enosys(0, addr, len);
+  return (int)shim_enosys(0, addr, len);
 #endif
 }
 
 /*
  *  shim_mlock2()
- *	wrapper for mlock2(2) - lock memory
+ *  wrapper for mlock2(2) - lock memory
  */
 int shim_mlock2(const void *addr, size_t len, int flags)
 {
 #if defined(__NR_mlock2)
-	return (int)syscall(__NR_mlock2, addr, len, flags);
+  return (int)syscall(__NR_mlock2, addr, len, flags);
 #else
-	return (int)shim_enosys(0, addr, len, flags);
+  return (int)shim_enosys(0, addr, len, flags);
 #endif
 }
 
 /*
  *  shim_mlockall()
- * 	wrapper for mlockall() - lock all memory
+ *  wrapper for mlockall() - lock all memory
  */
 int shim_mlockall(int flags)
 {
 #if defined(HAVE_MLOCKALL)
-	return mlockall(flags);
+  return mlockall(flags);
 #elif defined(__NR_mlockall)
-	return (int)syscall(__NR_mlockall, flags);
+  return (int)syscall(__NR_mlockall, flags);
 #else
-	return (int)shim_enosys(0, flags);
+  return (int)shim_enosys(0, flags);
 #endif
 }
 
 /*
  *  shim_munlockall()
- * 	wrapper for munlockall() - unlock all memory
+ *  wrapper for munlockall() - unlock all memory
  */
 int shim_munlockall(void)
 {
 #if defined(HAVE_MUNLOCKALL)
-	return munlockall();
+  return munlockall();
 #elif defined(__NR_munlockall)
-	return (int)syscall(__NR_munlockall);
+  return (int)syscall(__NR_munlockall);
 #else
-	return (int)shim_enosys(0);
+  return (int)shim_enosys(0);
 #endif
 }
 
 /*
  *  shim_nanosleep_uint64()
- *	nanosecond sleep that handles being interrupted but will
- *	be preempted if an ALARM signal has triggered a termination
+ *  nanosecond sleep that handles being interrupted but will
+ *  be preempted if an ALARM signal has triggered a termination
  */
 int shim_nanosleep_uint64(uint64_t nsec)
 {
 #if defined(HAVE_NANOSLEEP)
-	struct timespec t, trem;
-
-	t.tv_sec = nsec / STRESS_NANOSECOND;
-	t.tv_nsec = nsec % STRESS_NANOSECOND;
-
-	for (;;) {
-		errno = 0;
-		if (nanosleep(&t, &trem) < 0) {
-			if (errno == EINTR) {
-				t = trem;
-				if (keep_stressing_flag())
-					continue;
-			} else {
-				return -1;
-			}
-		}
-		break;
-	}
+  struct timespec t, trem;
+  t.tv_sec = nsec / STRESS_NANOSECOND;
+  t.tv_nsec = nsec % STRESS_NANOSECOND;
+  
+  for (;;)
+  {
+    errno = 0;
+    
+    if (nanosleep(&t, &trem) < 0)
+    {
+      if (errno == EINTR)
+      {
+        t = trem;
+        
+        if (keep_stressing_flag())
+        {
+          continue;
+        }
+      }
+      else
+      {
+        return -1;
+      }
+    }
+    
+    break;
+  }
+  
 #else
-	useconds_t usec = nsec / 1000;
-	const double t_end = stress_time_now() + ((double)usec) / 1000000.0;
-
-	for (;;) {
-		errno = 0;
-		if (usleep(usec) < 0) {
-			if (errno == EINTR) {
-				double t_left = t_end - stress_time_now();
-
-				if (t_left < 0.0)
-					return 0;
-				usec = (useconds_t)(t_left * 1000000.0);
-				if (usec == 0)
-					return 0;
-				if (keep_stressing_flag())
-					continue;
-			} else {
-				return -1;
-			}
-		}
-		break;
-	}
+  useconds_t usec = nsec / 1000;
+  const double t_end = stress_time_now() + ((double)usec) / 1000000.0;
+  
+  for (;;)
+  {
+    errno = 0;
+  
+    if (usleep(usec) < 0)
+    {
+      if (errno == EINTR)
+      {
+        double t_left = t_end - stress_time_now();
+  
+        if (t_left < 0.0)
+        {
+          return 0;
+        }
+  
+        usec = (useconds_t)(t_left * 1000000.0);
+  
+        if (usec == 0)
+        {
+          return 0;
+        }
+  
+        if (keep_stressing_flag())
+        {
+          continue;
+        }
+      }
+      else
+      {
+        return -1;
+      }
+    }
+  
+    break;
+  }
+  
 #endif
-	return 0;
+  return 0;
 }
 
 /*
  *  shim_usleep()
- *	usleep is now deprecated, so
- *	emulate it with nanosleep
+ *  usleep is now deprecated, so
+ *  emulate it with nanosleep
  */
 int shim_usleep(uint64_t usec)
 {
-	return shim_nanosleep_uint64(usec * 1000);
+  return shim_nanosleep_uint64(usec * 1000);
 }
 
 /*
  *  shim_usleep_interruptible()
- *	interruptible usleep
+ *  interruptible usleep
  */
 int shim_usleep_interruptible(uint64_t usec)
 {
 #if defined(HAVE_NANOSLEEP)
-	struct timespec t, trem;
-
-	t.tv_sec = usec / 1000000;
-	t.tv_nsec = ((long int)usec - (t.tv_sec * 1000000)) * 1000;
-
-	errno = 0;
-	return nanosleep(&t, &trem);
+  struct timespec t, trem;
+  t.tv_sec = usec / 1000000;
+  t.tv_nsec = ((long int)usec - (t.tv_sec * 1000000)) * 1000;
+  errno = 0;
+  return nanosleep(&t, &trem);
 #else
-	return usleep((useconds_t)usec);
+  return usleep((useconds_t)usec);
 #endif
 }
 
 
 /*
  *  shim_getlogin
- *	a more secure abstracted version of getlogin
+ *  a more secure abstracted version of getlogin
  *
  * According to flawfinder:
  * "It's often easy to fool getlogin. Sometimes it does not work at all,
@@ -679,676 +718,723 @@ int shim_usleep_interruptible(uint64_t usec)
 char *shim_getlogin(void)
 {
 #if defined(BUILD_STATIC)
-	/*
-	 *  static builds can't use getpwuid because of
-	 *  dynamic linking issues. Ugh.
-	 */
-	return NULL;
+  /*
+   *  static builds can't use getpwuid because of
+   *  dynamic linking issues. Ugh.
+   */
+  return NULL;
 #else
-	static char pw_name[256];
-	const struct passwd *pw = getpwuid(geteuid());
-	if (!pw)
-		return NULL;
-
-	(void)shim_strlcpy(pw_name, pw->pw_name, sizeof(pw_name));
-	pw_name[sizeof(pw_name) - 1 ] = '\0';
-
-	return pw_name;
+  static char pw_name[256];
+  const struct passwd *pw = getpwuid(geteuid());
+  
+  if (!pw)
+  {
+    return NULL;
+  }
+  
+  (void)shim_strlcpy(pw_name, pw->pw_name, sizeof(pw_name));
+  pw_name[sizeof(pw_name) - 1 ] = '\0';
+  return pw_name;
 #endif
 }
 
 /*
  *  shim_msync()
- *	wrapper for msync(2) - synchronize a file with a memory map
+ *  wrapper for msync(2) - synchronize a file with a memory map
  */
 int shim_msync(void *addr, size_t length, int flags)
 {
 #if defined(HAVE_MSYNC)
-	return msync(addr, length, flags);
+  return msync(addr, length, flags);
 #elif defined(__NR_msync)
-	return (int)syscall(__NR_msync, addr, length, flags);
+  return (int)syscall(__NR_msync, addr, length, flags);
 #else
-	return (int)shim_enosys(0, addr, length, flags);
+  return (int)shim_enosys(0, addr, length, flags);
 #endif
 }
 
 /*
  *  shim_sysfs()
- *	wrapper for sysfs(2) - get filesystem type information
+ *  wrapper for sysfs(2) - get filesystem type information
  */
 int shim_sysfs(int option, ...)
 {
 #if defined(__NR_sysfs)
-	int ret;
-	va_list ap;
-	char *fsname;
-	unsigned int fs_index;
-	char *buf;
-
-	va_start(ap, option);
-
-	switch (option) {
-	case 1:
-		fsname = va_arg(ap, char *);
-		ret = (int)syscall(__NR_sysfs, option, fsname);
-		break;
-	case 2:
-		fs_index = va_arg(ap, unsigned int);
-		buf = va_arg(ap, char *);
-		ret = (int)syscall(__NR_sysfs, option, fs_index, buf);
-		break;
-	case 3:
-		ret = (int)syscall(__NR_sysfs, option);
-		break;
-	default:
-		ret = -1;
-		errno = EINVAL;
-	}
-
-	va_end(ap);
-
-	return ret;
+  int ret;
+  va_list ap;
+  char *fsname;
+  unsigned int fs_index;
+  char *buf;
+  va_start(ap, option);
+  
+  switch (option)
+  {
+    case 1:
+      fsname = va_arg(ap, char *);
+      ret = (int)syscall(__NR_sysfs, option, fsname);
+      break;
+      
+    case 2:
+      fs_index = va_arg(ap, unsigned int);
+      buf = va_arg(ap, char *);
+      ret = (int)syscall(__NR_sysfs, option, fs_index, buf);
+      break;
+      
+    case 3:
+      ret = (int)syscall(__NR_sysfs, option);
+      break;
+      
+    default:
+      ret = -1;
+      errno = EINVAL;
+  }
+  
+  va_end(ap);
+  return ret;
 #else
-	return (int)shim_enosys(0, option);
+  return (int)shim_enosys(0, option);
 #endif
 }
 
 /*
  *  shim_madvise()
- *	wrapper for madvise(2) - get filesystem type information
+ *  wrapper for madvise(2) - get filesystem type information
  */
 int shim_madvise(void *addr, size_t length, int advice)
 {
 #if defined(HAVE_MADVISE)
-	return (int)madvise(addr, length, advice);
+  return (int)madvise(addr, length, advice);
 #elif defined(__NR_madvise)
-	return (int)syscall(__NR_madvise, addr, length, advice);
+  return (int)syscall(__NR_madvise, addr, length, advice);
 #elif defined(HAVE_POSIX_MADVISE)
-	int posix_advice;
-
-	switch (advice) {
-#if defined(POSIX_MADV_NORMAL) &&	\
+  int posix_advice;
+  
+  switch (advice)
+  {
+#if defined(POSIX_MADV_NORMAL) && \
     defined(MADV_NORMAL)
-	case MADV_NORMAL:
-		posix_advice = POSIX_MADV_NORMAL;
-		break;
+  
+    case MADV_NORMAL:
+      posix_advice = POSIX_MADV_NORMAL;
+      break;
 #endif
-#if defined(POSIX_MADV_SEQUENTIAL) &&	\
+#if defined(POSIX_MADV_SEQUENTIAL) && \
     defined(MADV_SEQUENTIAL)
-	case MADV_SEQUENTIAL:
-		posix_advice = POSIX_MADV_SEQUENTIAL;
-		break;
+  
+    case MADV_SEQUENTIAL:
+      posix_advice = POSIX_MADV_SEQUENTIAL;
+      break;
 #endif
-#if defined(POSIX_MADV_RANDOM) &&	\
+#if defined(POSIX_MADV_RANDOM) && \
     defined(MADV_RANDOM)
-	case MADV_RANDOM:
-		posix_advice = POSIX_MADV_RANDOM;
-		break;
+  
+    case MADV_RANDOM:
+      posix_advice = POSIX_MADV_RANDOM;
+      break;
 #endif
-#if defined(POSIX_MADV_WILLNEED) &&	\
+#if defined(POSIX_MADV_WILLNEED) && \
     defined(MADV_WILLNEED)
-	case MADV_WILLNEED:
-		posix_advice = POSIX_MADV_WILLNEED;
-		break;
+  
+    case MADV_WILLNEED:
+      posix_advice = POSIX_MADV_WILLNEED;
+      break;
 #endif
-#if defined(POSIX_MADV_DONTNEED) &&	\
+#if defined(POSIX_MADV_DONTNEED) && \
     defined(MADV_DONTNEED)
-	case MADV_DONTNEED:
-		posix_advice = POSIX_MADV_DONTNEED;
-		break;
+  
+    case MADV_DONTNEED:
+      posix_advice = POSIX_MADV_DONTNEED;
+      break;
 #endif
-	default:
-		posix_advice = POSIX_MADV_NORMAL;
-		break;
-	}
-	return (int)posix_madvise(addr, length, posix_advice);
+  
+    default:
+      posix_advice = POSIX_MADV_NORMAL;
+      break;
+  }
+  
+  return (int)posix_madvise(addr, length, posix_advice);
 #else
-	return (int)shim_enosys(0, addr, length, advice);
+  return (int)shim_enosys(0, addr, length, advice);
 #endif
 }
 
 /*
  *  shim_mincore()
- *	wrapper for mincore(2) -  determine whether pages are resident in memory
+ *  wrapper for mincore(2) -  determine whether pages are resident in memory
  */
 int shim_mincore(void *addr, size_t length, unsigned char *vec)
 {
-#if defined(HAVE_MINCORE) &&	\
+#if defined(HAVE_MINCORE) &&  \
     NEED_GLIBC(2,2,0)
 #if defined(__FreeBSD__) || defined(__OpenBSD__) || \
     defined(__NetBSD__) || defined(__sun__)
-	return mincore(addr, length, (char *)vec);
+  return mincore(addr, length, (char *)vec);
 #else
-	return mincore(addr, length, vec);
+  return mincore(addr, length, vec);
 #endif
 #elif defined(__NR_mincore)
-	return (int)syscall(__NR_mincore, addr, length, vec);
+  return (int)syscall(__NR_mincore, addr, length, vec);
 #else
-	return (int)shim_enosys(0, addr, length, vec);
+  return (int)shim_enosys(0, addr, length, vec);
 #endif
 }
 
 ssize_t shim_statx(
-	int dfd,
-	const char *filename,
-	unsigned int flags,
-	unsigned int mask,
-	struct shim_statx *buffer)
+  int dfd,
+  const char *filename,
+  unsigned int flags,
+  unsigned int mask,
+  struct shim_statx *buffer)
 {
 #if defined(__NR_statx)
-	return (ssize_t)syscall(__NR_statx, dfd, filename, flags, mask, buffer);
+  return (ssize_t)syscall(__NR_statx, dfd, filename, flags, mask, buffer);
 #else
-	return (ssize_t)shim_enosys(0, dfd, filename, flags, mask, buffer);
+  return (ssize_t)shim_enosys(0, dfd, filename, flags, mask, buffer);
 #endif
 }
 
 /*
  *  futex wake()
- *	wake n waiters on futex
+ *  wake n waiters on futex
  */
 int shim_futex_wake(const void *futex, const int n)
 {
-#if defined(__NR_futex) &&	\
+#if defined(__NR_futex) &&  \
     defined(FUTEX_WAKE)
-	return (int)syscall(__NR_futex, futex, FUTEX_WAKE, n, NULL, NULL, 0);
+  return (int)syscall(__NR_futex, futex, FUTEX_WAKE, n, NULL, NULL, 0);
 #else
-	return (int)shim_enosys(0, futex, 0, n, NULL, NULL, 0);
+  return (int)shim_enosys(0, futex, 0, n, NULL, NULL, 0);
 #endif
 }
 
 /*
  *  futex_wait()
- *	wait on futex with a timeout
+ *  wait on futex with a timeout
  */
 int shim_futex_wait(
-	const void *futex,
-	const int val,
-	const struct timespec *timeout)
+  const void *futex,
+  const int val,
+  const struct timespec *timeout)
 {
-#if defined(__NR_futex) &&	\
+#if defined(__NR_futex) &&  \
     defined(FUTEX_WAKE)
-	return (int)syscall(__NR_futex, futex, FUTEX_WAIT, val, timeout, NULL, 0);
+  return (int)syscall(__NR_futex, futex, FUTEX_WAIT, val, timeout, NULL, 0);
 #else
-	return (int)shim_enosys(0, futex, 0, val, timeout, NULL, 0);
+  return (int)shim_enosys(0, futex, 0, val, timeout, NULL, 0);
 #endif
 }
 
 /*
  *  dup3()
- *	linux special dup3
+ *  linux special dup3
  */
 int shim_dup3(int oldfd, int newfd, int flags)
 {
 #if defined(HAVE_DUP3)
-	return dup3(oldfd, newfd, flags);
+  return dup3(oldfd, newfd, flags);
 #elif defined(__NR_dup3)
-	return (int)syscall(__NR_dup3, oldfd, newfd, flags);
+  return (int)syscall(__NR_dup3, oldfd, newfd, flags);
 #else
-	return (int)shim_enosys(0, oldfd, newfd, flags);
+  return (int)shim_enosys(0, oldfd, newfd, flags);
 #endif
 }
 
 
 int shim_sync_file_range(
-	int fd,
-	shim_off64_t offset,
-	shim_off64_t nbytes,
-	unsigned int flags)
+  int fd,
+  shim_off64_t offset,
+  shim_off64_t nbytes,
+  unsigned int flags)
 {
 #if defined(HAVE_SYNC_FILE_RANGE)
-	return sync_file_range(fd, offset, nbytes, flags);
+  return sync_file_range(fd, offset, nbytes, flags);
 #elif defined(__NR_sync_file_range)
-	return (int)syscall(__NR_sync_file_range, fd, offset, nbytes, flags);
+  return (int)syscall(__NR_sync_file_range, fd, offset, nbytes, flags);
 #elif defined(__NR_sync_file_range2)
-	/*
-	 * from sync_file_range(2):
-	 * "Some architectures (e.g., PowerPC, ARM) need  64-bit  arguments
-	 * to be aligned in a suitable pair of registers.  On such
-	 * architectures, the call signature of sync_file_range() shown in
-	 * the SYNOPSIS would force a register to be wasted as padding
-	 * between the fd and offset arguments.  (See syscall(2) for details.)
-	 * Therefore, these architectures define a different system call that
-	 * orders the arguments suitably"
-	 */
-	return (int)syscall(__NR_sync_file_range2, fd, flags, offset, nbytes);
+  /*
+   * from sync_file_range(2):
+   * "Some architectures (e.g., PowerPC, ARM) need  64-bit  arguments
+   * to be aligned in a suitable pair of registers.  On such
+   * architectures, the call signature of sync_file_range() shown in
+   * the SYNOPSIS would force a register to be wasted as padding
+   * between the fd and offset arguments.  (See syscall(2) for details.)
+   * Therefore, these architectures define a different system call that
+   * orders the arguments suitably"
+   */
+  return (int)syscall(__NR_sync_file_range2, fd, flags, offset, nbytes);
 #else
-	return (int)shim_enosys(0, fd, offset, nbytes, flags);
+  return (int)shim_enosys(0, fd, offset, nbytes, flags);
 #endif
 }
 
 /*
  *  shim_ioprio_set()
- *	ioprio_set system call
+ *  ioprio_set system call
  */
 int shim_ioprio_set(int which, int who, int ioprio)
 {
 #if defined(__NR_ioprio_set)
-	return (int)syscall(__NR_ioprio_set, which, who, ioprio);
+  return (int)syscall(__NR_ioprio_set, which, who, ioprio);
 #else
-	return (int)shim_enosys(0, which, who, ioprio);
+  return (int)shim_enosys(0, which, who, ioprio);
 #endif
 }
 
 /*
  *  shim_ioprio_get()
- *	ioprio_get system call
+ *  ioprio_get system call
  */
 int shim_ioprio_get(int which, int who)
 {
 #if defined(__NR_ioprio_get)
-	return (int)syscall(__NR_ioprio_get, which, who);
+  return (int)syscall(__NR_ioprio_get, which, who);
 #else
-	return (int)shim_enosys(0, which, who);
+  return (int)shim_enosys(0, which, who);
 #endif
 }
 
 /*
  *   shim_brk()
- *	brk system call shim
+ *  brk system call shim
  */
 #if defined(__APPLE__)
-STRESS_PRAGMA_PUSH
-STRESS_PRAGMA_WARN_OFF
+  STRESS_PRAGMA_PUSH
+  STRESS_PRAGMA_WARN_OFF
 #endif
 int shim_brk(void *addr)
 {
 #if defined(__APPLE__)
-	return (int)brk(addr);
+  return (int)brk(addr);
 #elif defined(__NR_brk)
-	int ret;
-
-	ret = syscall(__NR_brk, addr);
-	(void)ret;
-	return (errno == 0) ? 0 : ENOMEM;
+  int ret;
+  ret = syscall(__NR_brk, addr);
+  (void)ret;
+  return (errno == 0) ? 0 : ENOMEM;
 #elif defined(HAVE_BRK)
-	return brk(addr);
+  return brk(addr);
 #else
-	uintptr_t brkaddr;
-	intptr_t inc;
-	void *newbrk;
-
-	brkaddr = (uintptr_t)shim_sbrk(0);
-	inc = brkaddr - (intptr_t)addr;
-	newbrk = shim_sbrk(inc);
-	if (newbrk == (void *)-1) {
-		if (errno != ENOSYS)
-			errno = ENOMEM;
-		return -1;
-	}
-	return 0;
+  uintptr_t brkaddr;
+  intptr_t inc;
+  void *newbrk;
+  brkaddr = (uintptr_t)shim_sbrk(0);
+  inc = brkaddr - (intptr_t)addr;
+  newbrk = shim_sbrk(inc);
+  
+  if (newbrk == (void *) -1)
+  {
+    if (errno != ENOSYS)
+    {
+      errno = ENOMEM;
+    }
+  
+    return -1;
+  }
+  
+  return 0;
 #endif
 }
 #if defined(__APPLE__)
-STRESS_PRAGMA_POP
+  STRESS_PRAGMA_POP
 #endif
 
 /*
  *   shim_sbrk()
- *	sbrk system call shim
+ *  sbrk system call shim
  */
 #if defined(__APPLE__)
-STRESS_PRAGMA_PUSH
-STRESS_PRAGMA_WARN_OFF
+  STRESS_PRAGMA_PUSH
+  STRESS_PRAGMA_WARN_OFF
 #endif
 void *shim_sbrk(intptr_t increment)
 {
 #if defined(HAVE_SBRK)
-	return sbrk(increment);
+  return sbrk(increment);
 #elif defined(__NR_sbrk)
-	return (void *)syscall(__NR_sbrk, increment);
+  return (void *)syscall(__NR_sbrk, increment);
 #else
-	return (void *)(intptr_t)shim_enosys(0, increment);
+  return (void *)(intptr_t)shim_enosys(0, increment);
 #endif
 }
 #if defined(__APPLE__)
-STRESS_PRAGMA_POP
+  STRESS_PRAGMA_POP
 #endif
 
 /*
  *   shim_strlcpy()
- *	wrapper / implementation of BSD strlcpy
+ *  wrapper / implementation of BSD strlcpy
  */
 size_t shim_strlcpy(char *dst, const char *src, size_t len)
 {
-#if defined(HAVE_BSD_STRLCPY) &&	\
+#if defined(HAVE_BSD_STRLCPY) &&  \
     !defined(BUILD_STATIC)
-	return strlcpy(dst, src, len);
+  return strlcpy(dst, src, len);
 #else
-	register char *d = dst;
-	register const char *s = src;
-	register size_t n = len;
-
-	if (n) {
-		while (--n) {
-			register char c = *s++;
-
-			*d++ = c;
-			if (c == '\0')
-				break;
-		}
-	}
-
-	if (!n) {
-		if (len)
-			*d = '\0';
-		while (*s)
-			s++;
-	}
-
-	return (s - src - 1);
+  register char *d = dst;
+  register const char *s = src;
+  register size_t n = len;
+  
+  if (n)
+  {
+    while (--n)
+    {
+      register char c = *s++;
+      *d++ = c;
+  
+      if (c == '\0')
+      {
+        break;
+      }
+    }
+  }
+  
+  if (!n)
+  {
+    if (len)
+    {
+      *d = '\0';
+    }
+  
+    while (*s)
+    {
+      s++;
+    }
+  }
+  
+  return (s - src - 1);
 #endif
 }
 
 /*
  *   shim_strlcat()
- *	wrapper / implementation of BSD strlcat
+ *  wrapper / implementation of BSD strlcat
  */
 size_t shim_strlcat(char *dst, const char *src, size_t len)
 {
-#if defined(HAVE_BSD_STRLCAT) &&	\
+#if defined(HAVE_BSD_STRLCAT) &&  \
     !defined(BUILD_STATIC)
-	return strlcat(dst, src, len);
+  return strlcat(dst, src, len);
 #else
-	register char *d = dst;
-	register const char *s = src;
-	register size_t n = len, tmplen;
-
-	while (n-- && *d != '\0') {
-		d++;
-	}
-
-	tmplen = d - dst;
-	n = len - tmplen;
-
-	if (!n) {
-		return strlen(s) + tmplen;
-	}
-
-	while (*s != '\0') {
-		if (n != 1) {
-			*d = *s;
-			d++;
-			n--;
-		}
-		s++;
-	}
-	*d = '\0';
-
-	return (s - src) + tmplen;
+  register char *d = dst;
+  register const char *s = src;
+  register size_t n = len, tmplen;
+  
+  while (n-- && *d != '\0')
+  {
+    d++;
+  }
+  
+  tmplen = d - dst;
+  n = len - tmplen;
+  
+  if (!n)
+  {
+    return strlen(s) + tmplen;
+  }
+  
+  while (*s != '\0')
+  {
+    if (n != 1)
+    {
+      *d = *s;
+      d++;
+      n--;
+    }
+  
+    s++;
+  }
+  
+  *d = '\0';
+  return (s - src) + tmplen;
 #endif
 }
 
 /*
  *  shim_fsync
- *	wrapper for fsync
+ *  wrapper for fsync
  */
 int shim_fsync(int fd)
 {
-#if defined(__APPLE__) &&	\
+#if defined(__APPLE__) && \
     defined(F_FULLFSYNC)
-	int ret;
-
-	/*
-	 *  For APPLE Mac OS X try to use the full fsync fcntl
-	 *  first and then fall back to a potential no-op'd fsync
-	 *  implementation.
-	 */
-	ret = fcntl(fd, F_FULLFSYNC, NULL);
-	if (ret == 0)
-		return 0;
+  int ret;
+  /*
+   *  For APPLE Mac OS X try to use the full fsync fcntl
+   *  first and then fall back to a potential no-op'd fsync
+   *  implementation.
+   */
+  ret = fcntl(fd, F_FULLFSYNC, NULL);
+  
+  if (ret == 0)
+  {
+    return 0;
+  }
+  
 #endif
-	return fsync(fd);
+  return fsync(fd);
 }
 
 /*
  *  shim_fdatasync
- *	wrapper for fdatasync
+ *  wrapper for fdatasync
  */
 int shim_fdatasync(int fd)
 {
 #if defined(HAVE_FDATASYNC)
-	/*
-	 *  For some reason, fdatasync prototype may be missing
-	 *  in some __APPLE__ systems.
-	 */
+  /*
+   *  For some reason, fdatasync prototype may be missing
+   *  in some __APPLE__ systems.
+   */
 #if defined(__APPLE__)
-	extern int fdatasync(int fd);
+  extern int fdatasync(int fd);
 #endif
-	return fdatasync(fd);
+  return fdatasync(fd);
 #elif defined(__NR_fdatasync)
-	return (int)syscall(__NR_fdatasync, fd);
+  return (int)syscall(__NR_fdatasync, fd);
 #else
-	return (int)shim_enosys(0, fd);
+  return (int)shim_enosys(0, fd);
 #endif
 }
 
 /*
  *   shim_pkey_alloc()
- *	wrapper for pkey_alloc()
+ *  wrapper for pkey_alloc()
  */
 int shim_pkey_alloc(unsigned long flags, unsigned long access_rights)
 {
 #if defined(HAVE_PKEY_ALLOC)
-	return pkey_alloc(flags, access_rights);
+  return pkey_alloc(flags, access_rights);
 #elif defined(__NR_pkey_alloc)
-	return (int)syscall(__NR_pkey_alloc, flags, access_rights);
+  return (int)syscall(__NR_pkey_alloc, flags, access_rights);
 #else
-	return (int)shim_enosys(0, flags, access_rights);
+  return (int)shim_enosys(0, flags, access_rights);
 #endif
 }
 
 /*
  *   shim_pkey_free()
- *	wrapper for pkey_free()
+ *  wrapper for pkey_free()
  */
 int shim_pkey_free(int pkey)
 {
 #if defined(HAVE_PKEY_FREE)
-	return pkey_free(pkey);
+  return pkey_free(pkey);
 #elif defined(__NR_pkey_free)
-	return (int)syscall(__NR_pkey_free, pkey);
+  return (int)syscall(__NR_pkey_free, pkey);
 #else
-	return (int)shim_enosys(0, pkey);
+  return (int)shim_enosys(0, pkey);
 #endif
 }
 
 /*
  *   shim_pkey_mprotect()
- *	wrapper for pkey_mprotect()
+ *  wrapper for pkey_mprotect()
  */
 int shim_pkey_mprotect(void *addr, size_t len, int prot, int pkey)
 {
 #if defined(HAVE_PKEY_MPROTECT)
-	return pkey_mprotect(addr, len, prot, pkey);
+  return pkey_mprotect(addr, len, prot, pkey);
 #elif defined(__NR_pkey_mprotect)
-	return (int)syscall(__NR_pkey_mprotect, addr, len, prot, pkey);
+  return (int)syscall(__NR_pkey_mprotect, addr, len, prot, pkey);
 #else
-	return (int)shim_enosys(0, addr, len, prot, pkey);
+  return (int)shim_enosys(0, addr, len, prot, pkey);
 #endif
 }
 
 /*
  *   shim_pkey_get()
- *	wrapper for pkey_get()
+ *  wrapper for pkey_get()
  */
 int shim_pkey_get(int pkey)
 {
 #if defined(HAVE_PKEY_GET)
-	return pkey_get(pkey);
+  return pkey_get(pkey);
 #elif defined(__NR_pkey_get)
-	return (int)syscall(__NR_pkey_get, pkey);
+  return (int)syscall(__NR_pkey_get, pkey);
 #else
-	return (int)shim_enosys(0, pkey);
+  return (int)shim_enosys(0, pkey);
 #endif
 }
 
 /*
  *   shim_pkey_set()
- *	wrapper for pkey_set()
+ *  wrapper for pkey_set()
  */
 int shim_pkey_set(int pkey, unsigned int rights)
 {
 #if defined(HAVE_PKEY_SET)
-	return pkey_set(pkey, rights);
+  return pkey_set(pkey, rights);
 #elif defined(__NR_pkey_set)
-	return (int)syscall(__NR_pkey_set, pkey, rights);
+  return (int)syscall(__NR_pkey_set, pkey, rights);
 #else
-	return (int)shim_enosys(0, pkey, rights);
+  return (int)shim_enosys(0, pkey, rights);
 #endif
 }
 
 /*
  *   shim_execveat()
- *	wrapper for execveat()
+ *  wrapper for execveat()
  */
 int shim_execveat(
-	int dir_fd,
-	const char *pathname,
-	char *const argv[],
-	char *const envp[],
-	int flags)
+  int dir_fd,
+  const char *pathname,
+  char *const argv[],
+  char *const envp[],
+  int flags)
 {
 #if defined(__NR_execveat)
-	return (int)syscall(__NR_execveat, dir_fd, pathname, argv, envp, flags);
+  return (int)syscall(__NR_execveat, dir_fd, pathname, argv, envp, flags);
 #else
-	return (int)shim_enosys(0, dir_fd, pathname, argv, envp, flags);
+  return (int)shim_enosys(0, dir_fd, pathname, argv, envp, flags);
 #endif
 }
 
 /*
  *   shim_waitpid()
- *	wrapper for waitpid with EINTR retry
+ *  wrapper for waitpid with EINTR retry
  */
 pid_t shim_waitpid(pid_t pid, int *wstatus, int options)
 {
-	pid_t ret;
-	int count = 0;
-
-	for (;;) {
-		errno = 0;
-		ret = waitpid(pid, wstatus, options);
-		if ((ret >= 0) || (errno != EINTR))
-			break;
-
-		count++;
-		/*
-		 *  Retry if EINTR unless we've have 2 mins
-		 *  consecutive EINTRs then give up.
-		 */
-		if (!keep_stressing_flag()) {
-			(void)kill(pid, SIGALRM);
-			if (count > 120)
-				(void)kill(pid, SIGKILL);
-		}
-		if (count > 10)
-			(void)sleep(1);
-	}
-	return ret;
+  pid_t ret;
+  int count = 0;
+  
+  for (;;)
+  {
+    errno = 0;
+    ret = waitpid(pid, wstatus, options);
+    
+    if ((ret >= 0) || (errno != EINTR))
+    {
+      break;
+    }
+    
+    count++;
+    
+    /*
+     *  Retry if EINTR unless we've have 2 mins
+     *  consecutive EINTRs then give up.
+     */
+    if (!keep_stressing_flag())
+    {
+      (void)kill(pid, SIGALRM);
+      
+      if (count > 120)
+      {
+        (void)kill(pid, SIGKILL);
+      }
+    }
+    
+    if (count > 10)
+    {
+      (void)sleep(1);
+    }
+  }
+  
+  return ret;
 }
 
 /*
  *   shim_wait()
- *	shim wrapper for wait, try waitpid if available
+ *  shim wrapper for wait, try waitpid if available
  */
 pid_t shim_wait(int *wstatus)
 {
 #if defined(__NR_waitpid)
-	return (pid_t)syscall(__NR_waitpid, -1, wstatus, 0);
+  return (pid_t)syscall(__NR_waitpid, -1, wstatus, 0);
 #else
-	return wait(wstatus);
+  return wait(wstatus);
 #endif
 }
 
 /*
  *   shim_wait3(()
- *	wrapper for wait3()
+ *  wrapper for wait3()
  *
  */
 pid_t shim_wait3(int *wstatus, int options, struct rusage *rusage)
 {
 #if defined(__NR_wait3)
-	return (pid_t)syscall(__NR_wait3, wstatus, options, rusage);
+  return (pid_t)syscall(__NR_wait3, wstatus, options, rusage);
 #elif defined(HAVE_WAIT3)
-	return wait3(wstatus, options, rusage);
+  return wait3(wstatus, options, rusage);
 #else
-	return (pid_t)shim_enosys(0, wstatus, options, rusage);
+  return (pid_t)shim_enosys(0, wstatus, options, rusage);
 #endif
 }
 
 /*
  *   shim_wait4(()
- *	wrapper for wait4()
+ *  wrapper for wait4()
  *
  */
 pid_t shim_wait4(pid_t pid, int *wstatus, int options, struct rusage *rusage)
 {
 #if defined(__NR_wait4)
-	return (pid_t)syscall(__NR_wait4, pid, wstatus, options, rusage);
+  return (pid_t)syscall(__NR_wait4, pid, wstatus, options, rusage);
 #elif defined(HAVE_WAIT4)
-	return wait4(pid, wstatus, options, rusage);
+  return wait4(pid, wstatus, options, rusage);
 #else
-	return (pid_t)shim_enosys(0, pid, wstatus, options, rusage);
+  return (pid_t)shim_enosys(0, pid, wstatus, options, rusage);
 #endif
 }
 
 /*
  *   shim_exit_group()
- *	wrapper for exit_group(), fall back to _exit() if it does
- *	not exist
+ *  wrapper for exit_group(), fall back to _exit() if it does
+ *  not exist
  */
 void shim_exit_group(int status)
 {
 #if defined(__NR_exit_group)
-	(void)syscall(__NR_exit_group, status);
+  (void)syscall(__NR_exit_group, status);
 #else
-	_exit(status);
+  _exit(status);
 #endif
 }
 
 /*
  *   shim_pidfd_send_signal()
- *	wrapper for pidfd_send_signal added to Linux 5.1
+ *  wrapper for pidfd_send_signal added to Linux 5.1
  */
 int shim_pidfd_send_signal(
-	int pidfd,
-	int sig,
-	siginfo_t *info,
-	unsigned int flags)
+  int pidfd,
+  int sig,
+  siginfo_t *info,
+  unsigned int flags)
 {
 #if defined(__NR_pidfd_send_signal)
-	return (int)syscall(__NR_pidfd_send_signal, pidfd, sig, info, flags);
+  return (int)syscall(__NR_pidfd_send_signal, pidfd, sig, info, flags);
 #else
-	return (int)shim_enosys(0, pidfd, sig, info, flags);
+  return (int)shim_enosys(0, pidfd, sig, info, flags);
 #endif
 }
 
 /*
  *   shim_pidfd_open()
- *	wrapper for pidfd_open
+ *  wrapper for pidfd_open
  */
 int shim_pidfd_open(pid_t pid, unsigned int flags)
 {
 #if defined(HAVE_PIDFD_OPEN)
-	return pidfd_open(pid, flags);
+  return pidfd_open(pid, flags);
 #elif defined(__NR_pidfd_open)
-	return (int)syscall(__NR_pidfd_open, pid, flags);
+  return (int)syscall(__NR_pidfd_open, pid, flags);
 #else
-	return (int)shim_enosys(0, pid, flags);
+  return (int)shim_enosys(0, pid, flags);
 #endif
 }
 
 /*
  *   shim_pidfd_getfd()
- *	wrapper for pidfd_getfd
+ *  wrapper for pidfd_getfd
  */
 int shim_pidfd_getfd(int pidfd, int targetfd, unsigned int flags)
 {
 #if defined(HAVE_PIDFD_GETFD)
-	return pidfd_getfd(pidfd, targetfd, flags);
+  return pidfd_getfd(pidfd, targetfd, flags);
 #elif defined(__NR_pidfd_getfd)
-	return (int)syscall(__NR_pidfd_getfd, pidfd, targetfd, flags);
+  return (int)syscall(__NR_pidfd_getfd, pidfd, targetfd, flags);
 #else
-	return (int)shim_enosys(0, pidfd, targetfd, flags);
+  return (int)shim_enosys(0, pidfd, targetfd, flags);
 #endif
 }
 
@@ -1359,677 +1445,674 @@ int shim_pidfd_getfd(int pidfd, int targetfd, unsigned int flags)
 int shim_fsopen(const char *fsname, unsigned int flags)
 {
 #if defined(__NR_fsopen)
-	return (int)syscall(__NR_fsopen, fsname, flags);
+  return (int)syscall(__NR_fsopen, fsname, flags);
 #else
-	return (int)shim_enosys(0, fsname, flags);
+  return (int)shim_enosys(0, fsname, flags);
 #endif
 }
 
 int shim_fsmount(int fd, unsigned int flags, unsigned int ms_flags)
 {
 #if defined(__NR_fsmount)
-	return (int)syscall(__NR_fsmount, fd, flags, ms_flags);
+  return (int)syscall(__NR_fsmount, fd, flags, ms_flags);
 #else
-	return (int)shim_enosys(0, fd, flags, ms_flags);
+  return (int)shim_enosys(0, fd, flags, ms_flags);
 #endif
 }
 
 int shim_fsconfig(
-	int fd,
-	unsigned int cmd,
-	const char *key,
-	const void *value,
-	int aux)
+  int fd,
+  unsigned int cmd,
+  const char *key,
+  const void *value,
+  int aux)
 {
 #if defined(__NR_fsconfig)
-	return (int)syscall(__NR_fsconfig, fd, cmd, key, value, aux);
+  return (int)syscall(__NR_fsconfig, fd, cmd, key, value, aux);
 #else
-	return (int)shim_enosys(0, fd, cmd, key, value, aux);
+  return (int)shim_enosys(0, fd, cmd, key, value, aux);
 #endif
 }
 
 int shim_move_mount(
-	int from_dfd,
-	const char *from_pathname,
-	int to_dfd,
-	const char *to_pathname,
-	unsigned int flags)
+  int from_dfd,
+  const char *from_pathname,
+  int to_dfd,
+  const char *to_pathname,
+  unsigned int flags)
 {
 #if defined(__NR_move_mount)
-	return (int)syscall(__NR_move_mount, from_dfd, from_pathname,
-		to_dfd, to_pathname, flags);
+  return (int)syscall(__NR_move_mount, from_dfd, from_pathname,
+                      to_dfd, to_pathname, flags);
 #else
-	return (int)shim_enosys(0, from_dfd, from_pathname,
-		to_dfd, to_pathname, flags);
+  return (int)shim_enosys(0, from_dfd, from_pathname,
+                          to_dfd, to_pathname, flags);
 #endif
 }
 
 int sys_clone3(struct shim_clone_args *cl_args, size_t size)
 {
 #if defined(__NR_clone3)
-	return (int)syscall(__NR_clone3, cl_args, size);
+  return (int)syscall(__NR_clone3, cl_args, size);
 #else
-	return (int)shim_enosys(0, cl_args, size);
+  return (int)shim_enosys(0, cl_args, size);
 #endif
 }
 
 int shim_ustat(dev_t dev, struct shim_ustat *ubuf)
 {
-#if defined(HAVE_USTAT) &&	\
+#if defined(HAVE_USTAT) &&  \
      defined(HAVE_USTAT_H)
-	return ustat(dev, (void *)ubuf);
+  return ustat(dev, (void *)ubuf);
 #elif defined(__NR_ustat)
-	return (int)syscall(__NR_ustat, dev, ubuf);
+  return (int)syscall(__NR_ustat, dev, ubuf);
 #else
-	return (int)shim_enosys(0, dev, ubuf);
+  return (int)shim_enosys(0, dev, ubuf);
 #endif
 }
 
 /*
  *   shim_getxattr
- *	wrapper for getxattr
+ *  wrapper for getxattr
  */
 ssize_t shim_getxattr(
-	const char *path,
-	const char *name,
-	void *value,
-	size_t size)
+  const char *path,
+  const char *name,
+  void *value,
+  size_t size)
 {
 #if defined(HAVE_GETXATTR)
 #if defined(__APPLE__)
-	return getxattr(path, name, value, size, 0, 0);
+  return getxattr(path, name, value, size, 0, 0);
 #else
-	return getxattr(path, name, value, size);
+  return getxattr(path, name, value, size);
 #endif
 #elif defined(__NR_getxattr)
-	return (ssize_t)syscall(__NR_getxattr, path, name, value, size);
+  return (ssize_t)syscall(__NR_getxattr, path, name, value, size);
 #else
-	return (ssize_t)shim_enosys(0, path, name, value, size);
+  return (ssize_t)shim_enosys(0, path, name, value, size);
 #endif
 }
 
 /*
  *  shim_listxattr
- *	wrapper for listxattr
+ *  wrapper for listxattr
  */
 ssize_t shim_listxattr(const char *path, char *list, size_t size)
 {
 #if defined(HAVE_LISTXATTR)
 #if defined(__APPLE__)
-	return listxattr(path, list, size, 0);
+  return listxattr(path, list, size, 0);
 #else
-	return listxattr(path, list, size);
+  return listxattr(path, list, size);
 #endif
 #elif defined(__NR_listxattr)
-	return (ssize_t)syscall(__NR_listxattr, path, list, size);
+  return (ssize_t)syscall(__NR_listxattr, path, list, size);
 #else
-	return (ssize_t)shim_enosys(0, path, list, size);
+  return (ssize_t)shim_enosys(0, path, list, size);
 #endif
 }
 
 /*
  *  shim_flistxattr
- *	wrapper for flistxattr
+ *  wrapper for flistxattr
  */
 ssize_t shim_flistxattr(int fd, char *list, size_t size)
 {
 #if defined(HAVE_FLISTXATTR)
 #if defined(__APPLE__)
-	return flistxattr(fd, list, size, 0);
+  return flistxattr(fd, list, size, 0);
 #else
-	return flistxattr(fd, list, size);
+  return flistxattr(fd, list, size);
 #endif
 #elif defined(__NR_flistxattr)
-	return (ssize_t)syscall(__NR_flistxattr, fd, list, size);
+  return (ssize_t)syscall(__NR_flistxattr, fd, list, size);
 #else
-	return (ssize_t)shim_enosys(0, fd, list, size);
+  return (ssize_t)shim_enosys(0, fd, list, size);
 #endif
 }
 
 /*
  *  shim_setxattr
- *	wrapper for setxattr
+ *  wrapper for setxattr
  */
 int shim_setxattr(const char *path, const char *name, const void *value, size_t size, int flags)
 {
 #if defined(HAVE_SETXATTR)
 #if defined(__APPLE__)
-	return setxattr(path, name, value, size, 0, flags);
+  return setxattr(path, name, value, size, 0, flags);
 #else
-	return setxattr(path, name, value, size, flags);
+  return setxattr(path, name, value, size, flags);
 #endif
 #elif defined(__NR_setxattr)
-	return (int)syscall(__NR_setxattr, path, name, value, size, flags);
+  return (int)syscall(__NR_setxattr, path, name, value, size, flags);
 #else
-	return (int)shim_enosys(0, path, name, value, size, flags);
+  return (int)shim_enosys(0, path, name, value, size, flags);
 #endif
 }
 
 /*
  *  shim_fsetxattr
- *	wrapper for fsetxattr
+ *  wrapper for fsetxattr
  */
 int shim_fsetxattr(int fd, const char *name, const void *value, size_t size, int flags)
 {
 #if defined(HAVE_FSETXATTR)
 #if defined(__APPLE__)
-	return fsetxattr(fd, name, value, size, 0, flags);
+  return fsetxattr(fd, name, value, size, 0, flags);
 #else
-	return fsetxattr(fd, name, value, size, flags);
+  return fsetxattr(fd, name, value, size, flags);
 #endif
 #elif defined(__NR_fsetxattr)
-	return (int)syscall(__NR_fsetxattr, fd, name, value, size, flags);
+  return (int)syscall(__NR_fsetxattr, fd, name, value, size, flags);
 #else
-	return (int)shim_enosys(0, fd, name, value, size, flags);
+  return (int)shim_enosys(0, fd, name, value, size, flags);
 #endif
 }
 
 /*
  *  shim_lsetxattr
- *	wrapper for lsetxattr
+ *  wrapper for lsetxattr
  */
 int shim_lsetxattr(const char *path, const char *name, const void *value, size_t size, int flags)
 {
 #if defined(HAVE_LSETXATTR)
-	return lsetxattr(path, name, value, size, flags);
+  return lsetxattr(path, name, value, size, flags);
 #elif defined(__NR_lsetxattr)
-	return (int)syscall(__NR_lsetxattr, path, name, value, size, flags);
+  return (int)syscall(__NR_lsetxattr, path, name, value, size, flags);
 #else
-	return (int)shim_enosys(0, path, name, value, size, flags);
+  return (int)shim_enosys(0, path, name, value, size, flags);
 #endif
 }
 
 /*
  *  shim_lgetxattr
- *	wrapper for lgetxattr
+ *  wrapper for lgetxattr
  */
 ssize_t shim_lgetxattr(const char *path, const char *name, void *value, size_t size)
 {
 #if defined(HAVE_LGETXATTR)
-	return lgetxattr(path, name, value, size);
+  return lgetxattr(path, name, value, size);
 #elif defined(__NR_lgetxattr)
-	return (ssize_t)syscall(__NR_lgetxattr, path, name, value, size);
+  return (ssize_t)syscall(__NR_lgetxattr, path, name, value, size);
 #else
-	return (ssize_t)shim_enosys(0, path, name, value, size);
+  return (ssize_t)shim_enosys(0, path, name, value, size);
 #endif
 }
 
 /*
  *  shim_fgetxattr
- *	wrapper for fgetxattr
+ *  wrapper for fgetxattr
  */
 ssize_t shim_fgetxattr(int fd, const char *name, void *value, size_t size)
 {
 #if defined(HAVE_FGETXATTR)
 #if defined(__APPLE__)
-	return fgetxattr(fd, name, value, size, 0, 0);
+  return fgetxattr(fd, name, value, size, 0, 0);
 #else
-	return fgetxattr(fd, name, value, size);
+  return fgetxattr(fd, name, value, size);
 #endif
 #elif defined(__NR_fgetxattr)
-	return (ssize_t)syscall(__NR_fgetxattr, fd, name, value, size);
+  return (ssize_t)syscall(__NR_fgetxattr, fd, name, value, size);
 #else
-	return (ssize_t)shim_enosys(0, fd, name, value, size);
+  return (ssize_t)shim_enosys(0, fd, name, value, size);
 #endif
 }
 
 /*
  *  shim_removexattr
- *	wrapper for removexattr
+ *  wrapper for removexattr
  */
 int shim_removexattr(const char *path, const char *name)
 {
 #if defined(HAVE_REMOVEXATTR)
 #if defined(__APPLE__)
-	return removexattr(path, name, 0);
+  return removexattr(path, name, 0);
 #else
-	return removexattr(path, name);
+  return removexattr(path, name);
 #endif
 #elif defined(__NR_removexattr)
-	return (int)syscall(__NR_removexattr, path, name);
+  return (int)syscall(__NR_removexattr, path, name);
 #else
-	return (int)shim_enosys(0, path, name);
+  return (int)shim_enosys(0, path, name);
 #endif
 }
 
 /*
  *  shim_lremovexattr
- *	wrapper for lremovexattr
+ *  wrapper for lremovexattr
  */
 int shim_lremovexattr(const char *path, const char *name)
 {
 #if defined(HAVE_LREMOVEXATTR)
-	return lremovexattr(path, name);
+  return lremovexattr(path, name);
 #elif defined(__NR_lremovexattr)
-	return (int)syscall(__NR_lremovexattr, path, name);
+  return (int)syscall(__NR_lremovexattr, path, name);
 #else
-	return (int)shim_enosys(0, path, name);
+  return (int)shim_enosys(0, path, name);
 #endif
 }
 
 /*
  *  shim_fremovexattr
- *	wrapper for fremovexattr
+ *  wrapper for fremovexattr
  */
 int shim_fremovexattr(int fd, const char *name)
 {
 #if defined(HAVE_FREMOVEXATTR)
 #if defined(__APPLE__)
-	return fremovexattr(fd, name, 0);
+  return fremovexattr(fd, name, 0);
 #else
-	return fremovexattr(fd, name);
+  return fremovexattr(fd, name);
 #endif
 #elif defined(__NR_fremovexattr)
-	return (int)syscall(__NR_fremovexattr, fd, name);
+  return (int)syscall(__NR_fremovexattr, fd, name);
 #else
-	return (int)shim_enosys(0, fd, name);
+  return (int)shim_enosys(0, fd, name);
 #endif
 }
 
 /*
  *  shim_llistxattr
- *	wrapper for fllistxattr
+ *  wrapper for fllistxattr
  */
 ssize_t shim_llistxattr(const char *path, char *list, size_t size)
 {
 #if defined(HAVE_LLISTXATTR)
-	return llistxattr(path, list, size);
+  return llistxattr(path, list, size);
 #elif defined(__NR_llistxattr)
-	return (ssize_t)syscall(__NR_llistxattr, path, list, size);
+  return (ssize_t)syscall(__NR_llistxattr, path, list, size);
 #else
-	return (ssize_t)shim_enosys(0, path, list, size);
+  return (ssize_t)shim_enosys(0, path, list, size);
 #endif
 }
 
 /*
  *  shim_reboot
- *	wrapper for linux reboot system call
+ *  wrapper for linux reboot system call
  */
 int shim_reboot(int magic, int magic2, int cmd, void *arg)
 {
-#if defined(__linux__) &&	\
+#if defined(__linux__) && \
     defined(__NR_reboot)
-	return (int)syscall(__NR_reboot, magic, magic2, cmd, arg);
+  return (int)syscall(__NR_reboot, magic, magic2, cmd, arg);
 #else
-	return (int)shim_enosys(0, magic, magic2, cmd, arg);
+  return (int)shim_enosys(0, magic, magic2, cmd, arg);
 #endif
 }
 
 /*
  *   shim_process_madvise
- *	wrapper for the new linux 5.10 process_madvise system call
- *	ref: commit 28a305ae24da ("mm/madvise: introduce process_madvise()
- *	syscall: an external memory hinting API"
+ *  wrapper for the new linux 5.10 process_madvise system call
+ *  ref: commit 28a305ae24da ("mm/madvise: introduce process_madvise()
+ *  syscall: an external memory hinting API"
  */
 ssize_t shim_process_madvise(
-	int pidfd,
-	const struct iovec *iovec,
-	unsigned long vlen,
-	int advice,
-	unsigned int flags)
+  int pidfd,
+  const struct iovec *iovec,
+  unsigned long vlen,
+  int advice,
+  unsigned int flags)
 {
 #if defined(__NR_process_madvise)
-	return (ssize_t)syscall(__NR_process_madvise, pidfd,
-		iovec, vlen, advice, flags);
+  return (ssize_t)syscall(__NR_process_madvise, pidfd,
+                          iovec, vlen, advice, flags);
 #else
-	return (ssize_t)shim_enosys(0, pidfd,
-		iovec, vlen, advice, flags);
+  return (ssize_t)shim_enosys(0, pidfd,
+                              iovec, vlen, advice, flags);
 #endif
 }
 
 /*
  *   shim_clock_adjtime
- *	wrapper for linux clock_adjtime system call
+ *  wrapper for linux clock_adjtime system call
  */
 int shim_clock_adjtime(clockid_t clk_id, struct shim_timex *tx)
 {
-#if defined(HAVE_SYS_TIMEX_H) &&	\
-    defined(CLOCK_THREAD_CPUTIME_ID) &&	\
+#if defined(HAVE_SYS_TIMEX_H) &&  \
+    defined(CLOCK_THREAD_CPUTIME_ID) && \
     defined(__NR_clock_adjtime)
-	return (int)syscall(__NR_clock_adjtime, clk_id, tx);
+  return (int)syscall(__NR_clock_adjtime, clk_id, tx);
 #else
-	return (int)shim_enosys(0, clk_id, tx);
+  return (int)shim_enosys(0, clk_id, tx);
 #endif
 }
 
 /*
  *   shim_clock_getres
- *	wrapper for linux clock_getres system call,
- *	prefer to use the system call to avoid and
- *	glibc avoidance of the system call
+ *  wrapper for linux clock_getres system call,
+ *  prefer to use the system call to avoid and
+ *  glibc avoidance of the system call
  */
 int shim_clock_getres(clockid_t clk_id, struct timespec *res)
 {
 #if defined(CLOCK_THREAD_CPUTIME_ID) && \
     defined(HAVE_CLOCK_GETRES)
 #if defined(__NR_clock_getres)
-	return (int)syscall(__NR_clock_getres, clk_id, res);
+  return (int)syscall(__NR_clock_getres, clk_id, res);
 #else
-	return clock_getres(clk_id, res);
+  return clock_getres(clk_id, res);
 #endif
 #else
-	return (int)shim_enosys(0, clk_id, res);
+  return (int)shim_enosys(0, clk_id, res);
 #endif
 }
 
 /*
  *   shim_clock_gettime
- *	wrapper for linux clock_gettime system call,
- *	prefer to use the system call to avoid and
- *	glibc avoidance of the system call
+ *  wrapper for linux clock_gettime system call,
+ *  prefer to use the system call to avoid and
+ *  glibc avoidance of the system call
  */
 int shim_clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
 #if defined(CLOCK_THREAD_CPUTIME_ID) && \
     defined(HAVE_CLOCK_GETTIME)
 #if defined(__NR_clock_gettime)
-	return (int)syscall(__NR_clock_gettime, clk_id, tp);
+  return (int)syscall(__NR_clock_gettime, clk_id, tp);
 #else
-	return clock_gettime(clk_id, tp);
+  return clock_gettime(clk_id, tp);
 #endif
 #else
-	return (int)shim_enosys(0, clk_id, tp);
+  return (int)shim_enosys(0, clk_id, tp);
 #endif
 }
 
 /*
  *   shim_clock_settime
- *	wrapper for linux clock_settime system call,
- *	prefer to use the system call to avoid and
- *	glibc avoidance of the system call
+ *  wrapper for linux clock_settime system call,
+ *  prefer to use the system call to avoid and
+ *  glibc avoidance of the system call
  */
 int shim_clock_settime(clockid_t clk_id, struct timespec *tp)
 {
 #if defined(CLOCK_THREAD_CPUTIME_ID) && \
     defined(HAVE_CLOCK_SETTIME)
 #if defined(__NR_clock_settime)
-	return (int)syscall(__NR_clock_settime, clk_id, tp);
+  return (int)syscall(__NR_clock_settime, clk_id, tp);
 #else
-	return clock_settime(clk_id, tp);
+  return clock_settime(clk_id, tp);
 #endif
 #else
-	return (int)shim_enosys(0, clk_id, tp);
+  return (int)shim_enosys(0, clk_id, tp);
 #endif
 }
 
 /*
  *  shim_nice
- *	wrapper for nice.  Some C libraries may use setpriority
- *	and hence the nice system call is not being used. Directly
- *	call the nice system call if it's available, else use the
- *	libc version.
+ *  wrapper for nice.  Some C libraries may use setpriority
+ *  and hence the nice system call is not being used. Directly
+ *  call the nice system call if it's available, else use the
+ *  libc version.
  *
- *	Some operating systems like Hiaku don't even support nice,
- *	so handle these cases too.
+ *  Some operating systems like Hiaku don't even support nice,
+ *  so handle these cases too.
  */
 int shim_nice(int inc)
 {
 #if defined(__NR_nice)
-	return (int)syscall(__NR_nice, inc);
+  return (int)syscall(__NR_nice, inc);
 #elif defined(HAVE_NICE)
-	return nice(inc);
+  return nice(inc);
 #else
-	(void)inc;
-
-	errno = -ENOSYS;
-	return -1;
+  (void)inc;
+  errno = -ENOSYS;
+  return -1;
 #endif
 }
 
 /*
  *  shim_time
- *	wrapper for time system call to
- *	avoid libc calling gettimeofday via
- *	the VDSO and force the time system call
+ *  wrapper for time system call to
+ *  avoid libc calling gettimeofday via
+ *  the VDSO and force the time system call
  */
 time_t shim_time(time_t *tloc)
 {
 #if defined(__NR_time)
-	return (time_t)syscall(__NR_time, tloc);
+  return (time_t)syscall(__NR_time, tloc);
 #else
-	return (time_t)shim_enosys(0, tloc);
+  return (time_t)shim_enosys(0, tloc);
 #endif
 }
 
 /*
  *  shim_gettimeofday
- *	wrapper for gettimeofday system call to
- *	avoid libc calling gettimeofday via
- *	the VDSO and force the time system call
+ *  wrapper for gettimeofday system call to
+ *  avoid libc calling gettimeofday via
+ *  the VDSO and force the time system call
  */
 int shim_gettimeofday(struct timeval *tv, struct timezone *tz)
 {
 #if defined(__NR_gettimeofday)
-	return (int)syscall(__NR_gettimeofday, tv, tz);
+  return (int)syscall(__NR_gettimeofday, tv, tz);
 #else
-	return (int)shim_enosys(0, tv, tz);
+  return (int)shim_enosys(0, tv, tz);
 #endif
 }
 
 /*
  *  shim_close_range()
- *	wrapper for close_range - close a range of
- *	file descriptors
+ *  wrapper for close_range - close a range of
+ *  file descriptors
  */
 int shim_close_range(unsigned int fd, unsigned int max_fd, unsigned int flags)
 {
 #if defined(__NR_close_range)
-	return (int)syscall(__NR_close_range, fd, max_fd, flags);
+  return (int)syscall(__NR_close_range, fd, max_fd, flags);
 #else
-	return (int)shim_enosys(0, fd, max_fd, flags);
+  return (int)shim_enosys(0, fd, max_fd, flags);
 #endif
 }
 
 /*
  *  shim_lookup_dcookie()
- *	wrapper for linux lookup_dcookie
+ *  wrapper for linux lookup_dcookie
  */
 int shim_lookup_dcookie(uint64_t cookie, char *buffer, size_t len)
 {
 #if defined(__NR_lookup_dcookie)
-	return (int)syscall(__NR_lookup_dcookie, cookie, buffer, len);
+  return (int)syscall(__NR_lookup_dcookie, cookie, buffer, len);
 #else
-	return (int)shim_enosys(0, cookie, buffer, len);
+  return (int)shim_enosys(0, cookie, buffer, len);
 #endif
 }
 
 /*
  *  shim_readlink()
- *	wrapper for readlink because some libc wrappers call
- *	readlinkat
+ *  wrapper for readlink because some libc wrappers call
+ *  readlinkat
  */
 ssize_t shim_readlink(const char *pathname, char *buf, size_t bufsiz)
 {
 #if defined(__NR_readlink)
-	return (ssize_t)syscall(__NR_readlink, pathname, buf, bufsiz);
+  return (ssize_t)syscall(__NR_readlink, pathname, buf, bufsiz);
 #else
-	return readlink(pathname, buf, bufsiz);
+  return readlink(pathname, buf, bufsiz);
 #endif
 }
 
 /*
  *  shim_sgetmask
- *	wrapper for obsolute linux system call sgetmask()
+ *  wrapper for obsolute linux system call sgetmask()
  */
 long shim_sgetmask(void)
 {
 #if defined(__NR_sgetmask)
-	return (long)syscall(__NR_sgetmask);
+  return (long)syscall(__NR_sgetmask);
 #else
-	return (long)shim_enosys(0);
+  return (long)shim_enosys(0);
 #endif
 }
 
 /*
  *  shim_ssetmask
- *	wrapper for obsolute linux system call ssetmask()
+ *  wrapper for obsolute linux system call ssetmask()
  */
 long shim_ssetmask(long newmask)
 {
 #if defined(__NR_ssetmask)
-	return (long)syscall(__NR_ssetmask, newmask);
+  return (long)syscall(__NR_ssetmask, newmask);
 #else
-	return (long)shim_enosys(0, newmask);
+  return (long)shim_enosys(0, newmask);
 #endif
 }
 
 /*
  *  shim_stime()
- *	wrapper for obsolete SVr4 stime system call
+ *  wrapper for obsolete SVr4 stime system call
  */
 int shim_stime(const time_t *t)
 {
 #if defined(HAVE_STIME)
 #if defined(__minix__)
-	/*
-	 *  Minix does not provide the prototype for stime
-	 *  and does not use a const time_t * argument
-	 */
-	int stime(time_t *t);
-	time_t *ut = (time_t *)shim_unconstify_ptr(t);
-
-	return stime(ut);
+  /*
+   *  Minix does not provide the prototype for stime
+   *  and does not use a const time_t * argument
+   */
+  int stime(time_t *t);
+  time_t *ut = (time_t *)shim_unconstify_ptr(t);
+  return stime(ut);
 #else
-	return stime(t);
+  return stime(t);
 #endif
 #elif defined(__NR_stime)
-	return (int)syscall(__NR_stime, t);
+  return (int)syscall(__NR_stime, t);
 #else
-	return (int)shim_enosys(0, t);
+  return (int)shim_enosys(0, t);
 #endif
 }
 
 /*
  *  shim_vhangup()
- *	wrapper for linux vhangup system call
+ *  wrapper for linux vhangup system call
  */
 int shim_vhangup(void)
 {
 #if defined(HAVE_VHANGUP)
-	return vhangup();
+  return vhangup();
 #elif defined(__NR_vhangup)
-	return (int)syscall(__NR_vhangup);
+  return (int)syscall(__NR_vhangup);
 #else
-	return (int)shim_enosys(0);
+  return (int)shim_enosys(0);
 #endif
 }
 
 /*
  *  shim_arch_prctl()
- *	wrapper for arch specific prctl system call
+ *  wrapper for arch specific prctl system call
  */
 int shim_arch_prctl(int code, unsigned long addr)
 {
-#if defined(HAVE_ARCH_PRCTL) &&		\
+#if defined(HAVE_ARCH_PRCTL) &&   \
     defined(__linux__)
-        extern int arch_prctl();
-
-        return arch_prctl(code, addr);
-#elif defined(__NR_arch_prctl) && 	\
+  extern int arch_prctl();
+  return arch_prctl(code, addr);
+#elif defined(__NR_arch_prctl) &&   \
       defined(__linux__)
-        return (int)syscall(__NR_arch_prctl, code, addr);
+  return (int)syscall(__NR_arch_prctl, code, addr);
 #else
-        return (int)shim_enosys(0, code, addr);
+  return (int)shim_enosys(0, code, addr);
 #endif
 }
 
 /*
  *  shim_tgkill()
- *	wrapper for linux thread kill tgkill system call
+ *  wrapper for linux thread kill tgkill system call
  */
 int shim_tgkill(int tgid, int tid, int sig)
 {
 #if defined(HAVE_TGKILL_LIBC)
-	return tgkill(tgid, tid, sig);
+  return tgkill(tgid, tid, sig);
 #elif defined(__NR_tgkill)
-	return (int)syscall(__NR_tgkill, tgid, tid, sig);
+  return (int)syscall(__NR_tgkill, tgid, tid, sig);
 #else
-	return (int)shim_enosys(0, tgid, tid, sig);
+  return (int)shim_enosys(0, tgid, tid, sig);
 #endif
 }
 
 /*
  *  shim_tkill()
- *	wrapper for deprecated thread kill tkill system
- *	call. No libc wrapper, so just try system call,
+ *  wrapper for deprecated thread kill tkill system
+ *  call. No libc wrapper, so just try system call,
  *      then emulate via tgkill.
  */
 int shim_tkill(int tid, int sig)
 {
 #if defined(__NR_tkill)
-	return (int)syscall(__NR_tkill, tid, sig);
+  return (int)syscall(__NR_tkill, tid, sig);
 #else
-	return shim_tgkill(0, tid, sig);
+  return shim_tgkill(0, tid, sig);
 #endif
 }
 
 /*
  *  shim_memfd_secret()
- *	wrapper for the new memfd_secret system call
+ *  wrapper for the new memfd_secret system call
  */
 int shim_memfd_secret(unsigned long flags)
 {
 #if defined(__NR_memfd_secret)
-	return (int)syscall(__NR_memfd_secret, flags);
+  return (int)syscall(__NR_memfd_secret, flags);
 #else
-	return (int)shim_enosys(0, flags);
+  return (int)shim_enosys(0, flags);
 #endif
 }
 
 /*
  *   shim_getrusage()
- *	wrapper for getrusage
+ *  wrapper for getrusage
  */
 int shim_getrusage(int who, struct rusage *usage)
 {
 #if defined(HAVE_GETRUSAGE)
-	return getrusage(who, usage);
+  return getrusage(who, usage);
 #elif defined(__NR_getrusage)
-	return (int)syscall(__NR_getrusage, who, usage);
+  return (int)syscall(__NR_getrusage, who, usage);
 #else
-	return (int)shim_enosys(0, who, usage);
+  return (int)shim_enosys(0, who, usage);
 #endif
 }
 
 /*
  *  shim_quotactl_fd()
- *  	wrapper for Linux 5.13 quotactl_fd
+ *    wrapper for Linux 5.13 quotactl_fd
  */
 int shim_quotactl_fd(unsigned int fd, unsigned int cmd, int id, void *addr)
 {
 #if defined(HAVE_QUOTACTL_FD)
-	return quotactl_fd(fd, cmd, id, addr);
+  return quotactl_fd(fd, cmd, id, addr);
 #elif defined(__NR_quotactl_fd)
-	return (int)syscall(__NR_quotactl_fd, fd, cmd, id, addr);
+  return (int)syscall(__NR_quotactl_fd, fd, cmd, id, addr);
 #else
-	return (int)shim_enosys(0, fd, cmd, id, addr);
+  return (int)shim_enosys(0, fd, cmd, id, addr);
 #endif
 }
 
 /*
  *  shim_modify_ldt()
- *	system call wrapper for modify_ldt()
+ *  system call wrapper for modify_ldt()
  */
 int shim_modify_ldt(int func, void *ptr, unsigned long bytecount)
 {
-#if defined(HAVE_MODIFY_LDT) &&	\
+#if defined(HAVE_MODIFY_LDT) && \
      defined(__NR_modify_ldt)
-	return (int)syscall(__NR_modify_ldt, func, ptr, bytecount);
+  return (int)syscall(__NR_modify_ldt, func, ptr, bytecount);
 #else
-	return (int)shim_enosys(0, func, ptr, bytecount);
+  return (int)shim_enosys(0, func, ptr, bytecount);
 #endif
 }
 
 /*
  *  shim_process_mrelease()
- *	system call wrapper for Linux 5.14 process_mrelease
+ *  system call wrapper for Linux 5.14 process_mrelease
  */
 int shim_process_mrelease(int pidfd, unsigned int flags)
 {
 #if defined(__NR_process_release)
-	return (int)syscall(__NR_process_release, pidfd, flags);
+  return (int)syscall(__NR_process_release, pidfd, flags);
 #else
-	return (int)shim_enosys(0, pidfd, flags);
+  return (int)shim_enosys(0, pidfd, flags);
 #endif
 }
 

@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct snd_ctl_card_info i;
-
-	(void)i;
-
-	return sizeof(i);
+  struct snd_ctl_card_info i;
+  (void)i;
+  return sizeof(i);
 }

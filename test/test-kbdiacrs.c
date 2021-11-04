@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct kbdiacrs m;
-
-	(void)m;
-
-	return sizeof(m);
+  struct kbdiacrs m;
+  (void)m;
+  return sizeof(m);
 }

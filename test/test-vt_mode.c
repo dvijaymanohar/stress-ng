@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct vt_mode m;
-
-	(void)m;
-
-	return sizeof(m);
+  struct vt_mode m;
+  (void)m;
+  return sizeof(m);
 }

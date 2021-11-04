@@ -24,16 +24,15 @@
  */
 #include <stdlib.h>
 
-#define NORETURN	__attribute__ ((noreturnx))
+#define NORETURN  __attribute__ ((noreturnx))
 
 void NORETURN do_exit(void)
 {
-	exit(0);
+  exit(0);
 }
 
 int main(int argc, char **argv)
 {
-	do_exit();
-
-	return 0;
+  do_exit();
+  return 0;
 }

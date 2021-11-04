@@ -29,8 +29,7 @@ extern ssize_t fgetxattr(int fd, const char *name, void *value, size_t size);
 
 int main(void)
 {
-	int fd = 3;
-	char value[] = "valuestring";
-
-	return fgetxattr(fd, "name", value, sizeof(value));
+  int fd = 3;
+  char value[] = "valuestring";
+  return fgetxattr(fd, "name", value, sizeof(value));
 }

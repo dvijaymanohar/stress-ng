@@ -28,7 +28,6 @@
 
 int main(void)
 {
-	pthread_mutexattr_t mutex_attr;
-
-	return pthread_mutexattr_init(&mutex_attr);
+  pthread_mutexattr_t mutex_attr;
+  return pthread_mutexattr_init(&mutex_attr);
 }

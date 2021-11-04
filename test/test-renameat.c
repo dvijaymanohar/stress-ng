@@ -31,8 +31,7 @@
 
 int main(void)
 {
-	int ret;
-
-	ret = renameat(AT_FDCWD, "test-old-file", AT_FDCWD, "test-new-file");
-	return ret;
+  int ret;
+  ret = renameat(AT_FDCWD, "test-old-file", AT_FDCWD, "test-new-file");
+  return ret;
 }

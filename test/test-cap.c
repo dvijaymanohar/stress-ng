@@ -29,11 +29,9 @@
 
 int main(void)
 {
-	struct __user_cap_header_struct uch;
-	struct __user_cap_data_struct ucd;
-
-	uch.version = _LINUX_CAPABILITY_VERSION_3;
-	uch.pid = getpid();
-
-	return capget(&uch, &ucd);
+  struct __user_cap_header_struct uch;
+  struct __user_cap_data_struct ucd;
+  uch.version = _LINUX_CAPABILITY_VERSION_3;
+  uch.pid = getpid();
+  return capget(&uch, &ucd);
 }

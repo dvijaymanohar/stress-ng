@@ -29,7 +29,6 @@
 
 int main(void)
 {
-	cpu_set_t mask;
-
-	return sched_getaffinity(0, sizeof(mask), &mask);
+  cpu_set_t mask;
+  return sched_getaffinity(0, sizeof(mask), &mask);
 }

@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return setregid(-1, -1);
+  return setregid(-1, -1);
 }

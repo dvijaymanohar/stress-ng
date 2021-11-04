@@ -27,13 +27,14 @@
 
 int main(void)
 {
-    int fd;
-
-    fd = inotify_init1(0);
-    if (fd < 0) {
-        return -1;
-    }
-
-    (void)close(fd);
-    return 0;
+  int fd;
+  fd = inotify_init1(0);
+  
+  if (fd < 0)
+  {
+    return -1;
+  }
+  
+  (void)close(fd);
+  return 0;
 }

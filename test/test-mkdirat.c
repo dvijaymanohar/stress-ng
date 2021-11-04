@@ -30,5 +30,5 @@
 
 int main(void)
 {
-	return mkdirat(AT_FDCWD, "test", 0666);
+  return mkdirat(AT_FDCWD, "test", 0666);
 }

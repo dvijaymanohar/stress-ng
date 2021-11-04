@@ -29,5 +29,5 @@
 
 int main(void)
 {
-	return faccessat2(AT_FDCWD, "dummytestfile", F_OK, AT_SYMLINK_NOFOLLOW);
+  return faccessat2(AT_FDCWD, "dummytestfile", F_OK, AT_SYMLINK_NOFOLLOW);
 }

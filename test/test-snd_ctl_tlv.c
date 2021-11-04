@@ -26,9 +26,7 @@
 
 int main(void)
 {
-	struct snd_ctl_tlv tlv;
-
-	(void)tlv;
-
-	return sizeof(tlv);
+  struct snd_ctl_tlv tlv;
+  (void)tlv;
+  return sizeof(tlv);
 }

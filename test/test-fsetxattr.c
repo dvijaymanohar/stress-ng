@@ -29,8 +29,7 @@ extern int fsetxattr(int fd, const char *name, const void *value, size_t size, i
 
 int main(void)
 {
-	int fd = 3;
-	char value[] = "valuestring";
-
-	return fsetxattr(fd, "name", value, sizeof(value), 0);
+  int fd = 3;
+  char value[] = "valuestring";
+  return fsetxattr(fd, "name", value, sizeof(value), 0);
 }

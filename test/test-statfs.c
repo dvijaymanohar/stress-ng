@@ -27,7 +27,6 @@
 
 int main(void)
 {
-	struct statfs buf;
-
-	return statfs(".", &buf);
+  struct statfs buf;
+  return statfs(".", &buf);
 }

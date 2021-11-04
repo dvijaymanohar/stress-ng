@@ -30,13 +30,12 @@
 
 int main(void)
 {
-	int fd = -1;
-	struct sockaddr addr = { 0 };
-	socklen_t addrlen = 0;
-
-	/*
-	 *  We don't care about invalid parameters, this code is just
-	 *  to see if this compiles
-	 */
-	return accept4(fd, &addr, &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+  int fd = -1;
+  struct sockaddr addr = { 0 };
+  socklen_t addrlen = 0;
+  /*
+   *  We don't care about invalid parameters, this code is just
+   *  to see if this compiles
+   */
+  return accept4(fd, &addr, &addrlen, SOCK_NONBLOCK | SOCK_CLOEXEC);
 }
